@@ -1,0 +1,58 @@
+Labb 3 - Äventyrsspel
+-----------------------
+Deadline 2013-12-13
+-----------------------
+Basversion av spelet
+3.1 - Uppslagning av funktion (krav för D) 6p X
+    - Lambdafunktion(!)
+3.4 - Använd new och delete under körning (kan hantera dynamiskt allokerat minne) (krav för B) 5p (delete under körning)
+
+Tillägg till basversion:
+3.2 - Spara/ladda spel till/från fil 4p
+3.3 - Ladda kartor/objekt från fil 5p
+
+Efter spelet är klart
+3.7 - Rita lite UML diagram, skriv ner några scenarion 4p
+
+Bonus 
+3.6 - Nätverk/trådat spel 9p
+
+Extra Bonus (har för mycket fritid)
+3.5 - Grafik 9p
+-----------------------
+
+Labb 1 - Vektor
+-----------------------
+1.1 Skapa Matris klass  (krav för C) 10p
+-----------------------
+
+Frågor:
+-----------------------
+* Hur sker minnesallokeringen? Var görs allokering och destruktion?
+
+* Läcker programmet minne? Kör en gång med valgrind.
+
+* Är alla read-only metoder const-deklarerade?
+
+* Beskriv klasshierarkin? Visa klassdiagram.
+
+* Hur ser slingan ut som hanterar händelser. Hur hanteras händelser?
+
+* Vad är det som håller reda på var spelaren är? 
+
+* Vad håller reda på alla andra objekt i spelet? Hur ser det ut i minnet, visa en minnesbild.
+
+* Hur kopplas miljöerna ihop? Visa minnesbild.
+
+* Hur hittar man saker/grannar? Hur sker uppslagningen?
+
+* På vilket sätt skiljer sig karaktärer i spelet?
+
+* Hur sker inmatning? Hur sker parsningen av det som inmatas?
+
+* Hur fungerar action-metoden?
+
+
+Källor:
+-----------------------
+http://www.codeguru.com/cpp/cpp/article.php/c17401/C-Tutorial-PointertoMember-Function.htm - Bra artikel på medlemsfunktionspekare.
