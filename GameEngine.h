@@ -1,7 +1,7 @@
 /// Description: Header file for GameEngine class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-11-27
 #pragma once
 #include <string>
 #include <vector>
@@ -13,6 +13,7 @@ namespace GameLogic
 	static const std::string startEventsLine       = "----------------EVENTS----------------\n";
 	static const std::string startPlayerEventsLine = "-------------PLAYER EVENTS------------\n";
 	static const std::string endSeperatorLine      = "--------------------------------------\n";
+	static const std::string helpText			   = "Welcome to World of NoobCraft! These are your available commands:\n Move, Take, Help, Look, Drop, Inventory, Show, Stats, Equip, Unequip, Attack.\n Good luck!";
 	
 	class GameEngine
 	{
@@ -24,6 +25,9 @@ namespace GameLogic
 
 		// Constructor 
 		GameEngine();
+
+		// Deletes all objects associated with current game instance.
+		void cleanUpGame();
 
 		// Parses input string from player console.
 		void processPlayerTurn(Character&);

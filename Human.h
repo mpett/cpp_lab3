@@ -35,11 +35,5 @@ namespace GameLogic
 		// Does an action with the Human. 
 		// An action can be anything from fight, go, talk etc.
 		void action();
-
-		// Damages the Human with a certian amount of points.
-		void takeDamage(int damage);
-
-		// Prints a help message with a basic description of the game.
-		bool help(std::string);
 	};
 }

@@ -25,18 +25,4 @@ namespace GameLogic
 	{
 		cerr << "Im a Goblin - I want to kill you!" << endl;
 	}
-
-	// Damages the Goblin with a certian amount of points.
-	void Goblin::takeDamage(int damage)
-	{
-		currentHealth_ -= damage;
-		cout << "Ouch! Was hit for " << damage << " points of damage!" << endl;
-	}
-
-	// Prints Goblin help message.
-	bool Goblin::help(std::string)
-	{
-		cout << "Help message for Goblin." << endl;
-		return false;
-	}
 }

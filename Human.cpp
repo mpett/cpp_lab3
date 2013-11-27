@@ -25,18 +25,4 @@ namespace GameLogic
 	{
 		cerr << "Im a Human!" << endl;
 	}
-
-	// Damages the Human with a certian amount of points.
-	void Human::takeDamage(int damage)
-	{
-		currentHealth_ -= damage;
-		cout << "Ouch! Was hit for " << damage << " points of damage!" << endl;
-	}
-
-	// Prints a help message with a basic description of the game.
-	bool Human::help(std::string)
-	{
-		cout << "Welcome to the game. You play this game by typing a command of your choice." << endl;
-		return false;
-	}
 }

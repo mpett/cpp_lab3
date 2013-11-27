@@ -2,9 +2,11 @@
 ///              It can be controllable (user can issue commands to it) or un-controllable (command is randomly generated).
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-11-27
 #include <algorithm>
+#include <sstream>
 #include "Character.h"
+#include "GameEngine.h"
 using std::string;
 
 namespace GameLogic
@@ -82,12 +84,10 @@ namespace GameLogic
 				// Drop equipped armor & weapon
 				if(currentEquippedArmor_ != nullptr)
 				{
-					currentRoom_->addEquipable(currentEquippedArmor_);
 					currentEquippedArmor_ = nullptr; // Make sure we do not delete this item since it is now in the room
 				}
 				if(currentEquippedWeapon_ != nullptr)
 				{
-					currentRoom_->addEquipable(currentEquippedWeapon_);
 					currentEquippedWeapon_ = nullptr; // Make sure we do not delete this item since it is now in the room
 				}
 			
@@ -136,6 +136,186 @@ namespace GameLogic
 		double Character::getCharacterWeight() const
 		{
 			return weight_;
+		}
+
+		// Prints the contents of the inventory for controllable character.
+		bool Character::showInventory(string)
+		{
+			if(controllable_)
+			{
+				std::stringstream ss;
+				ss << "---------------INVENTORY--------------\n" << endl;
+				ss.precision(2);
+				ss << std::fixed;
+
+				ss << "Weight capacity: " << currentCarried_ << "/" << maxCarried_ << " Kg" << endl << endl;
+
+
+				ss << "Characters:\n";
+				// Characters
+				if(carriedCharacters_.size() > 0)
+				{
+					for(auto character = carriedCharacters_.begin(); character != carriedCharacters_.end(); character++)
+					{
+						ss << character->second->getName() << " (" << character->second->getType() << ")" << "\t" << character->second->getTotalWeight() << "Kg" << endl;
+					}
+				}
+
+				ss << endl;
+				ss << "Items:\n";
+
+				// Items
+				if(carriedMiscItems_.size() > 0 || carriedEquipables_.size() > 0 || carriedConsumables_.size() > 0)
+				{
+
+					if(carriedMiscItems_.size() > 0)
+					{
+						for(auto item = carriedMiscItems_.begin(); item != carriedMiscItems_.end(); item++)
+						{
+							ss << item->second->getName() << " (" << item->second->getType() << ")" << "\t" << item->second->getWeight() << "Kg\t" << item->second->getPrice() << "$" << endl;
+						}
+					}
+
+					if(carriedEquipables_.size() > 0)
+					{
+						for(auto item = carriedEquipables_.begin(); item != carriedEquipables_.end(); item++)
+						{
+							ss << item->second->getName() << " (" << item->second->getType() << ")" << "\t" << item->second->getWeight() << "Kg\t" << item->second->getPrice() << "$\t" << ((item->second->isEquipped()) ? "EQUIPPED" : "") << endl;
+						}
+					}
+
+					if(carriedConsumables_.size() > 0)
+					{
+						for(auto item = carriedConsumables_.begin(); item != carriedConsumables_.end(); item++)
+						{
+							ss << item->second->getName() << " (" << item->second->getType() << ")" << "\t" << item->second->getWeight() << "Kg\t" << item->second->getPrice() << "$" << endl;
+						}
+					}
+					ss << endl;
+				}
+				ss << endl;
+				ss << "--------------------------------------\n";
+				cout << ss.str();
+			}
+			return false;
+		}
+
+		// Prints a general help message.
+		bool Character::help(std::string)
+		{
+			cout << GameLogic::helpText << endl;
+			return false;
+		}
+
+		// Prints the stats (i.e. strength, health etc.) of the controllable character.
+		bool Character::showStats(string)
+		{
+			if(controllable_)
+			{
+				std::stringstream ss;
+				ss << "-----------------STATS----------------\n" << endl;
+				ss.precision(2);
+				ss << std::fixed;
+
+				ss << "Name: " << name_ << endl;
+				ss << "Health: " << currentHealth_ << "/" << maxHealth_ << " HP" << endl;
+				ss << "Strength: " << strength_ << endl;
+				ss << "Damage: " << minDamage_ << "-" << maxDamage_ << " DMG" << endl;
+				ss << "Equipped Weapon: ";
+
+				// Weapon
+				if(currentEquippedWeapon_ == nullptr)
+				{
+					ss << "Unarmed";
+				}
+				else
+				{
+					ss << currentEquippedWeapon_->getName() << " (" << currentEquippedWeapon_->getType() << ")";
+				}
+				ss << endl;
+
+				ss << "Equipped Armor: ";
+
+				// Weapon
+				if(currentEquippedArmor_ == nullptr)
+				{
+					ss << "Unarmored";
+				}
+				else
+				{
+					ss << currentEquippedArmor_->getName() << " (" << currentEquippedArmor_->getType() << ")" << endl;
+				}
+				ss << endl;
+
+				ss << "Weight capacity: " << currentCarried_ << "/" << maxCarried_ << " Kg" << endl;
+
+
+				ss << "--------------------------------------\n";
+				cout << ss.str();
+			}
+			return false;
+		}
+
+		// Equips an Equipable matching text string.
+		bool Character::equip(string itemString)
+		{
+			std::transform(itemString.begin(), itemString.end(),itemString.begin(), ::toupper); // To caps
+			itemString.erase(remove(itemString.begin(),itemString.end(),' '),itemString.end());  // Trim whitespaces
+
+			Equipable *foundEquipable = getInvEquipable(itemString);
+			if(foundEquipable != nullptr) 
+			{
+				if(!foundEquipable->requirementCheck(*this))
+				{
+					if(controllable_)
+					{
+						cout << "In order to equip this item, you need to pass these requirements:\n" << foundEquipable->getRequirementDesc() << endl;
+					}
+					return false;
+				}
+				else
+				{
+					if(controllable_)
+					{
+						cout << "You equipped " << foundEquipable->getName() << "." << endl;
+					}
+					foundEquipable->onEquip(*this);
+					return true;
+				}
+			}
+
+			if(controllable_)
+			{
+				cout << "You cannot equip something which you do not own!" << endl;
+			}
+
+			return false;
+		}
+
+		// Unequips an Equipable matching text string.
+		bool Character::unequip(string itemString)
+		{
+			std::transform(itemString.begin(), itemString.end(),itemString.begin(), ::toupper); // To caps
+			itemString.erase(remove(itemString.begin(),itemString.end(),' '),itemString.end());  // Trim whitespaces
+
+			Equipable *foundEquipable = getInvEquipable(itemString);
+			if(foundEquipable != nullptr) 
+			{
+				if(controllable_)
+				{
+					cout << "You unequipped " << foundEquipable->getName() << "." << endl;
+				}
+
+				foundEquipable->onUnequip(*this);
+				return true;
+			}
+
+			if(controllable_)
+			{
+				cout << "You cannot equip something which you do not own!" << endl;
+			}
+
+			return false;
 		}
 
 		// Prints a description of the current room; lists all characters, items and exits (in the room).
@@ -229,49 +409,41 @@ namespace GameLogic
 		}
 
 		// Equips an armor. If another armor is currently equipped, then this will be unequipped and added to the inventory.
-		bool Character::equipArmor(Equipable* armor)
+		void Character::equipArmor(Equipable* armor)
 		{
-			if(armor->requirementCheck(*this))
+			if(currentEquippedArmor_ != nullptr)
 			{
-				if(currentEquippedArmor_ != nullptr)
-				{
-					currentEquippedArmor_->onUnequip(*this);
-				}
-				currentEquippedArmor_ = armor; // TODO: Is ok?
-				currentEquippedArmor_->onEquip(*this);
-				return true;
+				currentEquippedArmor_->onUnequip(*this);
 			}
-			else
-			{
-				return false;
-			}
+			currentEquippedArmor_ = armor;
+		}
+
+		// Unequips the armor.
+		void Character::unequipArmor()
+		{
+			currentEquippedArmor_ = nullptr;
 		}
 
 		// Equips a weapon. If another weapon is currently equipped, then this will be unequipped and added to the inventory.
-		bool Character::equipWeapon(Equipable* weapon)
+		void Character::equipWeapon(Equipable* weapon)
 		{
-			if(weapon->requirementCheck(*this))
+			if(currentEquippedWeapon_ != nullptr)
 			{
-				if(currentEquippedWeapon_ != nullptr)
-				{
-					currentEquippedWeapon_->onUnequip(*this);
-				}
-				currentEquippedWeapon_ = weapon; // TODO: Is ok?
-				currentEquippedWeapon_->onEquip(*this);
-				return true;
+				currentEquippedWeapon_->onUnequip(*this);
 			}
-			else
-			{
-				return false;
-			}
+			currentEquippedWeapon_ = weapon;
+		}
+
+		// Unequips the weapon.
+		void Character::unequipWeapon()
+		{
+			currentEquippedWeapon_ = nullptr;
 		}
 
 		// Tries to move from the room in a certain direction. Returns true if successful.
 		bool Character::go(string direction)
 		{
 			string originalDirection = direction;											 // Retain original message for output
-			std::transform(direction.begin(), direction.end(),direction.begin(), ::toupper); // To caps
-			direction.erase(remove(direction.begin(),direction.end(),' '),direction.end());  // Trim whitespaces
 
 			Environment * nextRoom = currentRoom_->neighbor(direction);
 			if(nextRoom != nullptr)
@@ -288,12 +460,36 @@ namespace GameLogic
 			}
 		}
 
+		// Performs an attack on the specified character.
+		bool Character::attack(string character)
+		{
+			Character * attackedChar = currentRoom_->getCharacter(character);
+			if(attackedChar == nullptr)
+			{
+				if(controllable_)
+				{
+					cout << "There is no one around with that name. You stand still in confusion." << endl;
+					return false;
+				}
+			}
+			int damage = rand()%(maxDamage_ - minDamage_+1) + minDamage_;
+			attackedChar->takeDamage(damage);
+			if(controllable_)
+			{
+				if(attackedChar == this) 
+				{
+					cout << getName() << " is obviously very confused and hit oneself for " << damage << " damage!" << endl;
+				} else
+				{
+					cout << "You managed to hit " << attackedChar->getName() << " for " << damage << " damage!" << endl;
+				}
+			}
+			return true;
+		}
+
 		// Drops the item with the name specified in string. 
 		bool Character::drop(string itemString)
 		{
-			std::transform(itemString.begin(), itemString.end(),itemString.begin(), ::toupper); // To caps
-			itemString.erase(remove(itemString.begin(),itemString.end(),' '),itemString.end());  // Trim whitespaces
-			
 			Item *foundItem = getInvMiscItem(itemString);
 			if(foundItem != nullptr) 
 			{
@@ -311,13 +507,24 @@ namespace GameLogic
 			Equipable *foundEquipable = getInvEquipable(itemString);
 			if(foundEquipable != nullptr) 
 			{
-				// Remove item from inventory - add to room.
-				removeInvEquipable(itemString);
-				currentRoom_->addEquipable(foundEquipable);
-
-				if(controllable_)
+				if(!foundEquipable->isEquipped())
 				{
-					cout << "You dropped " << foundEquipable->getName() << "." << endl;
+					// Remove item from inventory - add to room.
+					removeInvEquipable(itemString);
+					currentRoom_->addEquipable(foundEquipable);
+
+					if(controllable_)
+					{
+						cout << "You dropped " << foundEquipable->getName() << "." << endl;
+					}
+				}
+				else
+				{
+					if(controllable_)
+					{
+						cout << "You must first unequip " << foundEquipable->getName() << " before dropping it!" << endl;
+					}
+					return false;
 				}
 				return true;
 			}
@@ -492,6 +699,10 @@ namespace GameLogic
 		void Character::takeDamage(int damage)
 		{
 			currentHealth_ -= damage;
+			if(controllable_)
+			{
+				cout << "Ouch! Was hit for " << damage << " points of damage!" << endl;
+			}
 		}
 
 		// Sets the weight of the character.
@@ -522,6 +733,10 @@ namespace GameLogic
 		void Character::setMaxHealth(int health)
 		{
 			maxHealth_ = health;
+			if(currentHealth_ > maxHealth_)
+			{
+				currentHealth_ = maxHealth_;
+			}
 		}
 
 		// Sets the maximum damage that the character can accomplish to input.

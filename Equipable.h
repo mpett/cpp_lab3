@@ -1,7 +1,7 @@
 /// Description: Header file for Equipable class, inherits from Item class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-17
+///	Version: 2013-11-27
 #pragma once
 #include "Item.h"
 #include "Character.h"
@@ -14,13 +14,19 @@ namespace GameLogic
 	{
 	public:
 		// Equipable constructor.
-		Equipable(std::string name, std::string type, int price, double weight) : Item(name, type, price, weight){}
+		Equipable(std::string name, std::string type, int price, double weight) : Item(name, type, price, weight){equipped_ = false;}
 
 		// Returns true if the character passes the requirements of equipping this item.
 		virtual bool requirementCheck(const Character& character) const = 0;
 
 		// Returns a detailed string representation of this item.
 		virtual std::string printItem() const;
+
+		// Returns true if item is equipped.
+		bool isEquipped() const;
+
+		// Returns a description of the requirement.
+		std::string getRequirementDesc() const;
 
 		// Applies the effect the item has on the character.
 		virtual void onEquip(Character& character) = 0;
@@ -30,6 +36,10 @@ namespace GameLogic
 
 		// Assigns left-hand Equipable to right-hand Equipable.
 		virtual Equipable& operator=(const Equipable& env);
+
+	protected:
+		bool equipped_;
+		std::string requirementDesc_;
 	};
 }
 

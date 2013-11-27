@@ -1,7 +1,7 @@
 /// Description: Header file for Character class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-11-27
 #pragma once
 #include "Item.h"
 #include "Equipable.h"
@@ -100,7 +100,19 @@ namespace GameLogic
 		}
 
 		// Prints a help message for corresponding character.
-		virtual bool help(std::string) = 0;
+		virtual bool help(std::string);
+
+		// Prints the contents of the inventory for controllable character.
+		bool showInventory(std::string);
+
+		// Prints the stats (i.e. strength, health etc.) of the controllable character.
+		bool showStats(std::string);
+
+		// Equips an Equipable matching text string.
+		bool equip(std::string);
+
+		// Unequips an Equipable matching text string.
+		bool unequip(std::string);
 
 		// Does an action with the character. 
 		// An action can be anything from fight, go, talk etc.
@@ -110,13 +122,22 @@ namespace GameLogic
 		void addThingToSay(std::string sentence);
 
 		// Equips an armor. If another armor is currently equipped, then this will be unequipped and added to the inventory.
-		bool equipArmor(Equipable* armor);
+		void equipArmor(Equipable* armor);
+
+		// Unequips the armor.
+		void unequipArmor();
 
 		// Equips a weapon. If another weapon is currently equipped, then this will be unequipped and added to the inventory.
-		bool equipWeapon(Equipable* weapon);
+		void equipWeapon(Equipable* weapon);
+
+		// Unequips the weapon.
+		void unequipWeapon();
 
 		// Tries to move from the room in a certain direction.
 		bool go(std::string direction);
+
+		// Performs an attack on the specified character.
+		virtual bool attack(std::string character);
 
 		// Returns a sentence that the character will say.
 		virtual std::string talk();
@@ -240,7 +261,7 @@ namespace GameLogic
 
 		// Inventory
 		std::multimap<std::string, Item*> carriedMiscItems_;
-		std::multimap<std::string, Equipable*> carriedEquipables_;
+		std::map<std::string, Equipable*> carriedEquipables_;
 		std::multimap<std::string, Consumable*> carriedConsumables_;
 		std::map<std::string, Character*> carriedCharacters_;
 	};

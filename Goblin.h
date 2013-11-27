@@ -34,11 +34,5 @@ namespace GameLogic
 		// Does an action with the Goblin. 
 		// An action can be anything from fight, go, talk etc.
 		void action();
-
-		// Damages the Goblin with a certian amount of points.
-		void takeDamage(int damage);
-
-		// Prints Goblin help message.
-		bool help(std::string);
 	};
 }

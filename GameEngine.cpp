@@ -2,12 +2,14 @@
 ///              diplays text to screen and updates world accordingly.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-11-27
 
 #include "GameEngine.h"
 #include "DungeonRoom.h"
 #include "Human.h"
 #include "Goblin.h"
+#include "NormalSword.h"
+#include "NormalArmor.h"
 #include <iostream>
 #include <algorithm>
 using std::string;
@@ -20,13 +22,7 @@ namespace GameLogic
 	// Destructor - Free memory here
 	GameEngine::~GameEngine()
 	{
-		for (Environment* room : environments_)
-		{
-			if(room != nullptr)
-			{
-				delete room;
-			}
-		}
+		cleanUpGame();
 	}
 
 	// Constructor 
@@ -41,6 +37,15 @@ namespace GameLogic
 		actions_.insert(std::pair<string, ACT_PTR>("SEE", &Character::look));
 		actions_.insert(std::pair<string, ACT_PTR>("DROP", &Character::drop));
 		actions_.insert(std::pair<string, ACT_PTR>("PUT", &Character::drop));
+		actions_.insert(std::pair<string, ACT_PTR>("INVENTORY", &Character::showInventory));
+		actions_.insert(std::pair<string, ACT_PTR>("INV", &Character::showInventory));
+		actions_.insert(std::pair<string, ACT_PTR>("SHOW", &Character::showInventory));
+		actions_.insert(std::pair<string, ACT_PTR>("STATS", &Character::showStats));
+		actions_.insert(std::pair<string, ACT_PTR>("ME", &Character::showStats));
+		actions_.insert(std::pair<string, ACT_PTR>("EQUIP", &Character::equip));
+		actions_.insert(std::pair<string, ACT_PTR>("UNEQUIP", &Character::unequip));
+		actions_.insert(std::pair<string, ACT_PTR>("ATTACK", &Character::attack));
+		actions_.insert(std::pair<string, ACT_PTR>("HIT", &Character::attack));
 	}
 
 	// Parses input string from player console.
@@ -106,7 +111,7 @@ namespace GameLogic
 		Environment *env2 = new DungeonRoom("Another very dark room.");
 		
 		Character *character = new Human(true,"Joe", "Human", 5, 1, 1, 1, 1, 0, 100, env2);
-		character = new Goblin(true,"Goe", "Goblin", 5, 1, 1, 1, 1, 0, 10, env1);
+		character = new Goblin(false,"Goe1", "Goblin", 5, 1, 1, 1, 1, 0, 10, env1);
 
 		env1->addNeigbor(env2, "UP");
 		env2->addNeigbor(env1, "DOWN");
@@ -114,8 +119,29 @@ namespace GameLogic
 		env1->addMiscItem(miscItem1);
 		Item *miscItem2 = new Item("Silver Key", "Key", 100, 1);
 		env2->addMiscItem(miscItem2);
+		Equipable *eqItem1 = new NormalSword("Bastard Sword", 50, 5.25, 2, 5, 1);
+		Equipable *eqItem2 = new NormalSword("Heavy Sword", 50, 5.25, 2, 5, 10);
+		Equipable *eqItem3 = new NormalArmor("Good Amror", 75, 6.25, 25, 1);
+		Equipable *eqItem4 = new NormalArmor("Armor of Pain", 1, 10.25, -10, 1);
+		env1->addEquipable(eqItem1);
+		env1->addEquipable(eqItem2);
+		env2->addEquipable(eqItem3);
+		env2->addEquipable(eqItem4);
 		environments_.push_back(env1);
 		environments_.push_back(env2);
+	}
+
+	// Deletes all objects associated with current game instance.
+	void GameEngine::cleanUpGame()
+	{
+		for (Environment* room : environments_)
+		{
+			if(room != nullptr)
+			{
+				delete room;
+			}
+		}
+		environments_.clear();
 	}
 
 	// Updates current state of the game. This is the main method.
@@ -158,6 +184,7 @@ namespace GameLogic
 		{
 			doGameLoop = newTurn();
 		}
+		cleanUpGame();
 	}
 
 	// Run each time a new turn has occurred.
@@ -180,12 +207,11 @@ namespace GameLogic
 			auto characters = room->getCharacters(); // Not the most effective but it works...
 			for(auto it = characters.begin(); it != characters.end(); it++)
 			{
+				bool controllable = it->second->isControllable();
 				// Check if character is alive
 				if(it->second->isAlive())
 				{
 					room->turnEvent(*it->second);
-
-					bool controllable = it->second->isControllable();
 					if(controllable) thereIsAPlayer = true;
 
 					if(it->second->getCanPerformAction())
@@ -218,10 +244,29 @@ namespace GameLogic
 				// Generate loot and remove character
 				else
 				{
+					if(controllable)
+					{
+						cout << it->second->getName() << " was killed! " << endl;
+						
+						cout << "\nPress enter to continue . . . ";
+						cin.sync();
+						cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+						cout << endSeperatorLine;
+					}
 					it->second->killCharacter(true);
 				}
 			}
 		}
+
+		if(!thereIsAPlayer)
+		{
+			cout << "All of your character were killed.\n\tGAME OVER" << endl;
+			cout << "\nPress enter to continue . . . ";
+			cin.sync();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << endSeperatorLine;
+		}
+
 		return thereIsAPlayer;
 	}
 
