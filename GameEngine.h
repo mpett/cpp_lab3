@@ -10,10 +10,46 @@
 
 namespace GameLogic
 {
+	static const std::string version = "0.30";
+	static const std::string gameTitle             = "**************************************\n"
+		                                             "****** ________________________ ******\n"
+		                                             "*****//                        \\\\*****\n"
+		                                             "|/|/|| The Legend of Whipeskull ||\\|\\|\n"
+		                                             "*****\\\\________________________//*****\n"
+	                                                 "******       Version "+ version +"       ******\n"
+													 "**************************************\n";
+
+	static const std::string whipeSkull          = 
+													"0000000000000000000000000000000000000000\n"
+													"000000000000 10000000000 000000000000000\n"
+													"000000000000          1  000000000000000\n"
+													"000000000000            0000000000000000\n"
+													"00000000000              000000000000000\n"
+													"00000000000              000000000000000\n"
+													"0000000000                00000000000000\n"
+													"000000000                  0000000000000\n"
+													"000000000                  0000000000000\n"
+													"000000000                  0000000000000\n"
+													"000000000 000          000 0000000000000\n"
+													"000000000  0000      0000  0000000000000\n"
+													"000000000  00000     0000 00000000000000\n"
+													"000000000  000        000  0000000000000\n"
+													"000000001  00     0    00  0000000000000\n"
+													"00000000         00         000000000000\n"
+													"00000000         00         000000000000\n"
+													"000000000       0000       1000000000000\n"
+													"0000000000                00000000000000\n"
+													"0000000000000          00000000000000000\n"
+													"0000000000000          00000000000000000\n"
+													"00000000000001        100000000000000000\n"
+													"0000000000000   0000   00000000000000000\n"
+													"0000000000000 000000 0 00000000000000000\n"
+													"0000000000000000000000000000000000000000\n";
+
 	static const std::string startEventsLine       = "----------------EVENTS----------------\n";
 	static const std::string startPlayerEventsLine = "-------------PLAYER EVENTS------------\n";
 	static const std::string endSeperatorLine      = "--------------------------------------\n";
-	static const std::string helpText			   = "Welcome to World of NoobCraft! These are your available commands:\n Move, Take, Help, Look, Drop, Inventory, Show, Stats, Equip, Unequip, Attack.\n Good luck!";
+	static const std::string helpText			   = "Welcome to the Legend of Whipeskull! These are your available commands:\n Move, Take, Help, Look, Drop, Inventory, Show, Stats, Equip, Unequip, Attack.\n Good luck!";
 	
 	class GameEngine
 	{
@@ -30,7 +66,10 @@ namespace GameLogic
 		void cleanUpGame();
 
 		// Parses input string from player console.
-		void processPlayerTurn(Character&);
+		void processPlayerTurn(Character& character);
+
+		// "Clears" the terminal window.
+		void clearScreen();
 
 		// Returns true if this game has reached an end.
 		bool gameOver() const;
@@ -50,7 +89,8 @@ namespace GameLogic
 		// Updates current state of the game. This is the main method.
 		void mainLoop();
 
-		// -TODO-
+		// Always call a new turn until game is over.
+		// The game is played out here.
 		void gameLoop();
 
 		// Goes through each room, runs action for each Character in room.

@@ -25,6 +25,12 @@ namespace GameLogic
 		// Returns true if the consumable was consumed.
 		virtual bool isConsumed() const;
 
+		// Returns the number of charges/uses of this consumable item.
+		int getNrUses() const;
+
+		// Sets the number of charges/uses of this consumable item.
+		void setNrUses(int uses);
+
 		// Returns true if this item is consumed and destroyed when picked up.
 		bool isConsumedOnPickup() const;
 

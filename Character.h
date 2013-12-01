@@ -140,10 +140,13 @@ namespace GameLogic
 		virtual bool attack(std::string character);
 
 		// Returns a sentence that the character will say.
-		virtual std::string talk();
+		virtual void talk();
 
 		// Initiates a conversation with a character.
-		std::string talkTo(Character& character);
+		bool talkTo(std::string);
+
+		// Attempt to consume a consumable item that the character owns.
+		bool consume(std::string);
 
 		// Tries to hit a character with currently equipped weapon.
 		virtual int fight(Character& character);

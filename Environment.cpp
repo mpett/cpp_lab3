@@ -3,7 +3,7 @@
 ///              It will typically have a description which will be displayed upon entering the room with a character controlled by the player.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-11-29
 
 #include <algorithm>
 #include "Environment.h"
@@ -58,9 +58,10 @@ namespace GameLogic
 	string Environment::directions() const 
 	{
 		stringstream ss;
+		ss << "| ";
 		for(auto exit = exits_.begin(); exit != exits_.end(); exit++)
 		{
-			ss << exit->first << " ";
+			ss << exit->first << " | ";
 		}
 		return ss.str();
 	}
@@ -71,14 +72,10 @@ namespace GameLogic
 		return roomRequirement_;
 	}
 
-	// Returns the description of this room.
-	string Environment::getDescription(const Character * currentChar) const
+	// Returns a string containing contents of the current environment, with characters, items and exits.
+	string Environment::getRoomContent(const Character * currentChar) const
 	{
 		stringstream ss;
-
-		ss << description_ << endl;
-
-		ss << endl;
 		ss << "Characters: ";
 
 		// Characters
@@ -128,8 +125,21 @@ namespace GameLogic
 
 		// Exits 
 		ss << endl;
-		ss << "Exits: " << directions();
+		ss << "Exits: " << directions() << endl;
 
+		return ss.str();
+
+	}
+
+	// Returns the description of this room.
+	string Environment::getDescription(const Character * currentChar) const
+	{
+		stringstream ss;
+
+		ss << description_ << endl << endl;
+
+		ss << getRoomContent(currentChar);
+		
 		return ss.str();
 	}
 
@@ -289,7 +299,7 @@ namespace GameLogic
 		auto it = miscItems_.find(key);
 		if(it != miscItems_.end())
 		{
-			miscItems_.erase(key);
+			miscItems_.erase(it);
 		}
 	}
 
@@ -316,7 +326,7 @@ namespace GameLogic
 		auto it = consumables_.find(key);
 		if(it != consumables_.end())
 		{
-			consumables_.erase(key);
+			consumables_.erase(it);
 		}
 	}
 

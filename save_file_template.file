@@ -1,0 +1,68 @@
+# READ ROOMS
+2								# Number of rooms to be read.
+
+"Dungeon Room"					# Name of Room
+"Down"							# Exits
+"Sword of Doom"					# Equipables
+"Golden Key", "Old Paper"		# Misc Items
+"Hash brownie"					# Consumables
+"Blurgh"						# Characters
+"Apple Room"					# Neighbors
+
+"Apple Room"					# Name of Room
+"Up"							# Exits
+""								# Equipables
+""								# Misc Items
+"Apple"							# Consumables
+"Joe"							# Characters
+"Dungeon Room"					# Neighbors
+
+# READ CHARACTERS
+2 								# Number of characters to be read.
+
+"Joe"							# Name of character.					
+"Human"							# Type
+5								# Strength	
+10								# Current Health
+10								# Maximum Health
+5								# Minimum Damage
+10								# Maximum Damage
+0								# Current Carried
+10								# Maximum Carried
+"Armor of Light"				# Current equipped armor
+"Sword of Fury"					# Current equipped weapon
+"Hello", "Balls", "lol"			# Things to say
+"Apple Room"					# Current room
+true							# Can perform action?
+true							# Controllable?
+false							# At new room?
+
+"Blurgh"						# Name of character.					
+"Goblin"						# Type
+3								# Strength	
+2								# Current Health
+5								# Maximum Health
+2								# Minimum Damage
+4								# Maximum Damage
+4								# Current Carried
+6								# Maximum Carried
+"Crude Breastplate"				# Current equipped armor
+"Old Club"						# Current equipped weapon
+"Ugh", "Blargh", "Blurbh"		# Things to say
+"Dungeon Room"					# Current room
+true							# Can perform action?
+false							# Controllable?
+false							# At new room?
+
+
+# READ CONSUMABLES
+2								# Number of consumables to be read.
+
+
+# READ MISCITEMS
+
+# READ EQUIPABLES
+
+# READ MISC ITEMS
+
+

@@ -1,11 +1,33 @@
 Labb 3 - Äventyrsspel
 -----------------------
-Deadline 2013-12-13
+Deadline 2013-12-13 (egen deadline 2013-12-09)
 -----------------------
 Basversion av spelet
-3.1 - Uppslagning av funktion (krav för D) 6p X
-    - Lambdafunktion(!)
-3.4 - Använd new och delete under körning (kan hantera dynamiskt allokerat minne) (krav för B) 5p (delete under körning)
+
+Features:
+- Pickup
+- Drop
+- Go
+- Look
+
+TO-DO:
+-------------
+  makefile  X
+- Inventory X
+- Stats     X
+- Equip     X
+- Unequip   X
+- Attack    X
+- Help      X
+- Talk		X
+- Consume	X
+-------------
+
+3.1 - Uppslagning av funktion (krav för D) 6p                                                              X
+    - Lambdafunktion(!)                                                                                    X
+3.4 - Använd new och delete under körning (kan hantera dynamiskt allokerat minne) (krav för B) 5p          X
+    - delete under körning (ja - se killCharacter)                                                         X
+	- new under körning (? - skapa nytt spel? - gör annars ett äppelträd där man kan plocka på sig äpplen) X
 
 Tillägg till basversion:
 3.2 - Spara/ladda spel till/från fil 4p
@@ -24,6 +46,8 @@ Extra Bonus (har för mycket fritid)
 Labb 1 - Vektor
 -----------------------
 1.1 Skapa Matris klass  (krav för C) 10p
+
+1.2 DFS lösare av labyrint 4P
 -----------------------
 
 Frågor:
@@ -56,3 +80,4 @@ Frågor:
 Källor:
 -----------------------
 http://www.codeguru.com/cpp/cpp/article.php/c17401/C-Tutorial-PointertoMember-Function.htm - Bra artikel på medlemsfunktionspekare.
+http://stackoverflow.com/questions/7469139/what-is-equivalent-to-getch-getche-in-linux     - Lösning till getch() i Linux

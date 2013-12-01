@@ -18,7 +18,19 @@ namespace GameLogic
 	// Returns true if the consumable was consumed.
 	bool Consumable::isConsumed() const
 	{
-		return nrUses_ == 0;
+		return nrUses_ <= 0;
+	}
+
+	// Returns the number of charges/uses of this consumable item.
+	int Consumable::getNrUses() const
+	{
+		return nrUses_;
+	}
+
+	// Sets the number of charges/uses of this consumable item.
+	void Consumable::setNrUses(int uses)
+	{
+		nrUses_ = uses;
 	}
 
 	// Returns true if this item is consumed and destroyed when picked up.

@@ -31,6 +31,9 @@ namespace GameLogic
 		// Returns requirements for entering this room. Requirements are space separated.
 		std::string roomRequirement() const;
 
+		// Returns a string containing contents of the current environment, with characters, items and exits.
+		std::string getRoomContent(const Character * character) const;
+
 		// Returns the description of this room.
 		std::string getDescription(const Character * currentChar) const;
 
@@ -117,7 +120,7 @@ namespace GameLogic
 
 		// Inventory
 		std::multimap<std::string, Item*> miscItems_;
-		std::multimap<std::string, Equipable*> equipables_;
+		std::map<std::string, Equipable*> equipables_;
 		std::multimap<std::string, Consumable*> consumables_;
 		std::map<std::string, Character*> characters_;
 	};

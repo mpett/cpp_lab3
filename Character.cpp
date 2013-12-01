@@ -150,7 +150,6 @@ namespace GameLogic
 
 				ss << "Weight capacity: " << currentCarried_ << "/" << maxCarried_ << " Kg" << endl << endl;
 
-
 				ss << "Characters:\n";
 				// Characters
 				if(carriedCharacters_.size() > 0)
@@ -188,10 +187,9 @@ namespace GameLogic
 					{
 						for(auto item = carriedConsumables_.begin(); item != carriedConsumables_.end(); item++)
 						{
-							ss << item->second->getName() << " (" << item->second->getType() << ")" << "\t" << item->second->getWeight() << "Kg\t" << item->second->getPrice() << "$" << endl;
+							ss << item->second->getName() << " (" << item->second->getType() << ")" << "\t" << item->second->getWeight() << "Kg\t" << item->second->getPrice() << "$\t" << "Charges: " << item->second->getNrUses() << endl;
 						}
 					}
-					ss << endl;
 				}
 				ss << endl;
 				ss << "--------------------------------------\n";
@@ -323,7 +321,7 @@ namespace GameLogic
 		{
 			if(controllable_)
 			{
-				cout << currentRoom_->getDescription(this) << endl;
+				cout << currentRoom_->getDescription(this);
 			}
 
 			return false;
@@ -449,13 +447,13 @@ namespace GameLogic
 			if(nextRoom != nullptr)
 			{
 				setCurrentRoom(nextRoom, true); // TODO: Is ok?
-				if(controllable_) cout << "You went" << originalDirection << endl;
+				if(controllable_) cout << "You went " << originalDirection << endl;
 				currentRoom_->onEntry(*this);
 				return true;
 			}
 			else
 			{
-				if(controllable_) cout << "You cannot go" << originalDirection << endl;
+				if(controllable_) cout << "You cannot go " << originalDirection << endl;
 				return false;
 			}
 		}
@@ -633,6 +631,16 @@ namespace GameLogic
 				{
 					// Remove item from room.
 					currentRoom_->removeConsumable(itemString);
+					if(foundConsumable->isConsumedOnPickup())
+					{
+						foundConsumable->applyEffect(*this);
+						if(controllable_)
+						{
+							cout << foundConsumable->getName() << " disappeared." << endl;
+						}
+						delete foundConsumable;
+						return true;
+					}
 					addInvConsumable(foundConsumable);
 					if(controllable_)
 					{
@@ -676,15 +684,69 @@ namespace GameLogic
 		}
 
 		// Returns a sentence that the character will say.
-		string Character::talk()
+		void Character::talk()
 		{
-			return thingsToSay_[rand() % thingsToSay_.size()];
+			if(!thingsToSay_.empty())
+			{
+				cout << name_ << ": " << thingsToSay_[rand() % thingsToSay_.size()] << endl;
+			}
+			else
+			{
+				cout << name_ << " has nothing to say to you." << endl;
+			}
 		}
 
 		// Initiates a conversation with a character.
-		string Character::talkTo(Character& character)
+		bool Character::talkTo(string characterString)
 		{
-			return character.talk();
+			characterString.erase(remove(characterString.begin(),characterString.end(),' '),characterString.end());  // Trim whitespace
+			Character * character = currentRoom_->getCharacter(characterString);
+			if(controllable_)
+			{
+				if(character == nullptr)
+				{
+					cout << characterString << " is not in this room." << endl;
+					return false;
+				}
+
+				if(character == this) 
+				{
+					cout << "You speak to yourself in confusion." << endl;
+					return false;
+				}
+
+				character->talk();
+			}
+			return false;
+		}
+
+		// Attempt to consume a consumable item that the character owns.
+		bool Character::consume(string consumableString)
+		{
+			consumableString.erase(remove(consumableString.begin(),consumableString.end(),' '),consumableString.end());  // Trim whitespace
+			Consumable * consumable = getInvConsumable(consumableString);
+			if(consumable == nullptr)
+			{
+				if(controllable_)
+				{
+					cout << "There is no " << consumableString << " in your inventory to consume." << endl;
+					return false;
+				}
+			}
+
+			consumable->applyEffect(*this);
+
+			if(consumable->isConsumed())
+			{
+				removeInvConsumable(consumableString);
+				if(controllable_)
+				{
+					cout << consumable->getName() << " was consumed and removed from the inventory" << endl;
+				}
+				delete consumable;
+			}
+
+			return true;
 		}
 
 		// Tries to hit a character with currently equipped weapon.
@@ -899,7 +961,7 @@ namespace GameLogic
 			if(it != carriedMiscItems_.end())
 			{
 				currentCarried_ -= getInvMiscItem(key)->getWeight();
-				carriedMiscItems_.erase(key);
+				carriedMiscItems_.erase(it);
 			}
 		}
 
@@ -929,7 +991,7 @@ namespace GameLogic
 			if(it != carriedConsumables_.end())
 			{
 				currentCarried_ -= getInvConsumable(key)->getWeight();
-				carriedConsumables_.erase(key);
+				carriedConsumables_.erase(it);
 			}
 		}
 
