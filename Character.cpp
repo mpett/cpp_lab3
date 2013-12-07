@@ -2,7 +2,7 @@
 ///              It can be controllable (user can issue commands to it) or un-controllable (command is randomly generated).
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-27
+///	Version: 2013-12-07
 #include <algorithm>
 #include <sstream>
 #include "Character.h"
@@ -10,19 +10,19 @@
 using std::string;
 
 namespace GameLogic
-{
+{		
 		// Destructor to character.
 		Character:: ~Character()
 		{
 			if(currentEquippedArmor_ != nullptr)
 			{
-				delete currentEquippedArmor_;
+				currentEquippedArmor_ = nullptr;
 			}
 			if(currentEquippedWeapon_ != nullptr)
 			{
-				delete currentEquippedWeapon_;
+				currentEquippedWeapon_ = nullptr;
 			}
-			
+		
 			for(auto it = carriedMiscItems_.begin(); it != carriedMiscItems_.end(); it++)
 			{
 				if(it->second != nullptr)
@@ -57,7 +57,8 @@ namespace GameLogic
 			carriedCharacters_.clear();
 		}
 
-		// Removes the character from its room (drops its items as loot if specified) and then deletes it by running its destructor.
+		// Drops the loot of the character into the room (if dropLoot is specified as true).
+		// NOTE: Character must be removed from room and deleted in GameEngine game loop.
 		void Character::killCharacter(bool dropLoot)
 		{
 			if(dropLoot)
@@ -71,6 +72,7 @@ namespace GameLogic
 						it->second = nullptr; // Make sure we do not delete this item since it is now in the room
 					}
 				}
+				
 				// Drop carrieEquipables
 				for(auto it = carriedEquipables_.begin(); it != carriedEquipables_.end(); it++)
 				{
@@ -84,11 +86,13 @@ namespace GameLogic
 				// Drop equipped armor & weapon
 				if(currentEquippedArmor_ != nullptr)
 				{
-					currentEquippedArmor_ = nullptr; // Make sure we do not delete this item since it is now in the room
+					currentEquippedArmor_->onUnequip(*this);
+					unequipArmor(); // Make sure we do not delete this item since it is now in the room
 				}
 				if(currentEquippedWeapon_ != nullptr)
 				{
-					currentEquippedWeapon_ = nullptr; // Make sure we do not delete this item since it is now in the room
+					currentEquippedWeapon_->onUnequip(*this);
+					unequipWeapon(); // Make sure we do not delete this item since it is now in the room
 				}
 			
 				// Drop carriedConsumables
@@ -110,8 +114,6 @@ namespace GameLogic
 					}
 				}
 			}
-			currentRoom_->removeCharacter(name_);
-			delete this;
 		}
 
 		// Returns the name of the character.
@@ -330,8 +332,63 @@ namespace GameLogic
 		// Returns a string with detailed information about this character.
 		string Character::printCharacter() const
 		{
-			//TODO:
-			return "This is not a character.";
+			std::stringstream ss;
+			ss << name_ << "\n" << type_ << "\n" << strength_ << "\n" << weight_ << "\n" << currentHealth_ << "\n" << maxHealth_ << "\n" << minDamage_ << "\n" << maxDamage_ << "\n" << currentCarried_ << "\n" << maxCarried_ << "\n";
+			
+			if(currentEquippedArmor_ != nullptr)
+			{
+				ss << currentEquippedArmor_->getName();
+			}
+			ss << "\n";
+			
+			if(currentEquippedWeapon_ != nullptr)
+			{
+				ss << currentEquippedWeapon_->getName();
+			}
+			ss << "\n";
+			
+			// Things to say (; seperated)
+			bool first = true;
+			for(auto it = thingsToSay_.begin(); it != thingsToSay_.end(); it++)
+			{
+				if(!first) ss << ";";
+				ss << (*it);
+			}
+			ss << "\n";
+			
+			ss << ((canPerformAction_)?1:0) << "\n" << ((controllable_)?1:0) << "\n" << ((atNewRoom_)?1:0) << "\n" << aiBehavior_ << "\n";
+			
+			// Find and add all misc items (ids)
+			first = true;
+			for(auto it = carriedMiscItems_.begin(); it != carriedMiscItems_.end(); it++)
+			{
+				if(!first) ss << ",";
+				ss << it->second->getId();
+				first = false;
+			}
+			ss << "\n";
+			
+			// Find and add all consumables (ids)
+			first = true;
+			for(auto it = carriedConsumables_.begin(); it != carriedConsumables_.end(); it++)
+			{
+				if(!first) ss << ",";
+				ss << it->second->getId();
+				first = false;
+			}
+			ss << "\n";
+			
+			// Find and add all equipables by name
+			first = true;
+			for(auto it = carriedEquipables_.begin(); it != carriedEquipables_.end(); it++)
+			{
+				if(!first) ss << ",";
+				ss << it->second->getName();
+				first = false;
+			}
+			ss << "\n";	
+			
+			return ss.str();
 		}
 
 		// Returns if the Character is in a new room
@@ -446,15 +503,193 @@ namespace GameLogic
 			Environment * nextRoom = currentRoom_->neighbor(direction);
 			if(nextRoom != nullptr)
 			{
-				setCurrentRoom(nextRoom, true); // TODO: Is ok?
-				if(controllable_) cout << "You went " << originalDirection << endl;
-				currentRoom_->onEntry(*this);
-				return true;
+				if(nextRoom->checkRoomRequirement(*this))
+				{
+					setCurrentRoom(nextRoom, true); // TODO: Is ok?
+					if(controllable_) cout << "You went " << originalDirection << endl;
+					currentRoom_->onEntry(*this);
+					return true;
+				}
+				else
+				{
+					if(controllable_) 
+					{
+						cout << "You need to have the following items/characters to enter:" << endl;
+						
+						string delimiter = ";";
+						size_t pos = 0;
+						string currReq;
+						string readLine = nextRoom->roomRequirement();
+						while ((pos = readLine.find(delimiter)) != std::string::npos) 
+						{
+							currReq = readLine.substr(0, pos);
+							cout << currReq << endl;
+							readLine.erase(0, pos + delimiter.length());
+						}
+						if(readLine.find(delimiter) == string::npos)
+						{
+							if(readLine != "")
+							{
+								currReq = readLine;
+								cout << currReq << endl;
+							}
+						}
+					}				
+					return false;
+				}
+
 			}
 			else
 			{
 				if(controllable_) cout << "You cannot go " << originalDirection << endl;
 				return false;
+			}
+		}
+		
+		// Does an action with the character. 
+		// An action can be anything from fight, go, talk etc.
+		// This should typically only be called on NPCs.
+		void Character::action()
+		{
+			int dice = rand() % 100;
+			switch(aiBehavior_)
+			{
+				// NPC will only stand still with this behavior 
+				case(AI_BEHAVIOR::STAND_STILL):
+				{
+					break;
+				}
+				// NPC will move around and talk with this behavior
+				case(AI_BEHAVIOR::PACIFIST):
+				{
+					// Move
+					if(dice < 30)
+					{
+						tryRandomMove();
+					}
+					// Try to talk
+					else if(dice < 60)
+					{
+						tryRandomSpeak();
+					}
+					break;
+				}
+				// NPC will move around and pickup items with this behavior
+				case(AI_BEHAVIOR::PASSIVE_LOOTER):
+				{
+					// Move
+					if(dice < 30)
+					{
+						tryRandomMove();
+					}
+					// Pickup random item
+					else if(dice < 60)
+					{
+						tryPickupRandomItem();
+					}
+					break;
+				}
+				// NPC will move around, attacking anything it encounters
+				case(AI_BEHAVIOR::AGGRESSIVE_AMOVE):
+				{
+					// Only attack if there are more than 1 in room (i.e. not alone)
+					if(currentRoom_->getCharacters().size() > 1)
+					{
+						tryRandomAttackAll();
+					}
+					// Time to get a movin'
+					else if(dice > 40)
+					{
+						tryRandomMove();
+					}
+					break;
+				}
+				// NPC will move around at random, attacking any player character it encounters   
+				case(AI_BEHAVIOR::AMOVE):
+				{
+					// Only attack if there are more than 1 in room (i.e. not alone)
+					if(currentRoom_->containsPlayer())
+					{
+						tryRandomAttack();
+					}
+					// Time to get a movin'
+					else if(dice > 40)
+					{
+						tryRandomMove();
+					}
+					break;
+				}
+				// NPC will remain in room but will attack anything it encounters (even other NPCs)
+				case(AI_BEHAVIOR::AGGRESSIVE_GUARD):
+				{
+					tryRandomAttackAll();
+					break;
+				}
+				// NPC will remain in room, will attack any player character it encounters
+				case(AI_BEHAVIOR::GUARD):
+				{
+					if(currentRoom_->containsPlayer())
+					{
+						tryRandomAttack();
+					}
+					break;
+				}
+				// NPC will pickup anything it encounters (and have capacity to pickup) - that includes characters so beware!
+				case(AI_BEHAVIOR::COLLECTOR):
+				{
+					// Move
+					if(dice < 25)
+					{
+						tryRandomMove();
+					}
+					// Pickup random item
+					else if(dice < 50)
+					{
+						tryPickupRandomItem();
+					}
+					// Pickup random character
+					else if(dice < 70)
+					{
+						tryPickupRandomCharacter();
+					}
+					break;
+				}
+				// NPC will remain docile (and stand still) as long as nobody hits it - then it will go to AGGRESSIVE_AMOVE behavior.
+				case(AI_BEHAVIOR::DO_NOT_HIT_ME):
+				{
+					// At the moment DO_NOT_HIT_ME is the same as STAND_STILL...until hit that is
+					break;
+				}
+				// NPC will try to do all sorts of actions with all sorts of objects
+				case(AI_BEHAVIOR::CRAZY):
+				{
+					// Move
+					if(dice < 16)
+					{
+						tryRandomMove();
+					}
+					// Pickup random item
+					else if(dice < 32)
+					{
+						tryPickupRandomItem();
+					}
+					// Pickup random character
+					else if(dice < 48)
+					{
+						tryPickupRandomCharacter();
+					}
+					// Try attack a random character
+					else if(64)
+					{
+						tryRandomAttackAll();
+					}
+					// Speak
+					else if(80)
+					{
+						tryRandomSpeak();
+					}
+					break;
+				}
 			}
 		}
 
@@ -471,7 +706,7 @@ namespace GameLogic
 				}
 			}
 			int damage = rand()%(maxDamage_ - minDamage_+1) + minDamage_;
-			attackedChar->takeDamage(damage);
+			std::cerr << "damage was " << damage << endl;
 			if(controllable_)
 			{
 				if(attackedChar == this) 
@@ -482,6 +717,8 @@ namespace GameLogic
 					cout << "You managed to hit " << attackedChar->getName() << " for " << damage << " damage!" << endl;
 				}
 			}
+			attackedChar->takeDamage(damage);
+			
 			return true;
 		}
 
@@ -757,13 +994,44 @@ namespace GameLogic
 			return damage;
 		}
 
-		// Damages the character with a certian amount of points.
+		// Damages the character with a certain amount of points.
 		void Character::takeDamage(int damage)
 		{
 			currentHealth_ -= damage;
 			if(controllable_)
 			{
 				cout << "Ouch! Was hit for " << damage << " points of damage!" << endl;
+			}
+			
+			if(!isAlive())
+			{
+				if(controllable_)
+				{
+					cout << name_ << " was killed! " << endl;
+					
+					cout << "\nPress enter to continue . . . ";
+					std::cin.sync();
+					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+					cout << endSeperatorLine;
+				}
+				else
+				{
+					if(currentRoom_->containsPlayer())
+					{
+						cout << name_ << " was killed! " << endl;
+						cout << "The contents of its inventory were dropped on the ground. " << endl;
+					}
+				}
+				killCharacter(true);
+			}
+			// Time to get mad
+			else if(aiBehavior_ == AI_BEHAVIOR::DO_NOT_HIT_ME)
+			{
+				aiBehavior_ = AI_BEHAVIOR::AGGRESSIVE_AMOVE;
+				if(currentRoom_->containsPlayer() && !controllable_)
+				{
+					cout << name_ << " got frenzied! Lookout!" << endl;
+				}
 			}
 		}
 
@@ -848,6 +1116,12 @@ namespace GameLogic
 		void Character::setCanPerformAction(bool value)
 		{
 			canPerformAction_ = value;
+		}
+		
+		// Sets the AI Behavior to be used when character is not controlled by a player.
+		void Character::setAIBehavior(int behavior)
+		{
+			aiBehavior_ = behavior;
 		}
 
 		// Returns pointer to Item if it exist on this character. Otherwise returns nullptr.
@@ -1008,6 +1282,148 @@ namespace GameLogic
 				currentCarried_ -= getInvCharacter(key)->getTotalWeight();
 				carriedCharacters_.erase(key);
 			}
+		}
+		
+		/** HERE FOLLOWS FUNCTIONS WHICH ARE ONLY RELEVANT TO NPC **/
+		
+		// Tries to move in a random direction.
+		bool Character::tryRandomMove()
+		{
+			string tryDir = currentRoom_->getRandomDirection();
+			return go(tryDir);
+		}
+		
+		// Tries to say something random.
+		bool Character::tryRandomSpeak()
+		{
+			// Only speak if Character has something to say (and there is a Player to hear it)
+			if(!thingsToSay_.empty() && currentRoom_->containsPlayer())
+			{
+				cout << name_ << ": " << thingsToSay_[rand() % thingsToSay_.size()] << endl;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		// Tries to attack a random target (including NPC).
+		bool Character::tryRandomAttackAll()
+		{
+			string tryCharacter = currentRoom_->getRandomCharacter();
+			Character * character = currentRoom_->getCharacter(tryCharacter);
+			
+			// Avoid hitting nothing and self
+			if(character != nullptr && character != this)
+			{
+				// Only display attack message if Player is there to hear it
+				if(currentRoom_->containsPlayer())
+				{
+					cout << name_ << " attacked " << character->getName() << "!" << endl;
+				}
+				attack(tryCharacter);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		// Tries to attack a "random" character (excluding other NPCs).
+		bool Character::tryRandomAttack()
+		{
+			string tryCharacter = currentRoom_->getRandomCharacter();
+			Character * character = currentRoom_->getCharacter(tryCharacter);
+			
+			// Avoid hitting nothing and self (only hit other Players)
+			if(character != nullptr && character != this && character->isControllable())
+			{
+				cout << name_ << " attacked " << character->getName() << "!" << endl;
+				attack(tryCharacter);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		// Tries to pickup a random item in the room.
+		bool Character::tryPickupRandomItem()
+		{
+			if(currentRoom_->getMiscItems().size() > 0)
+			{
+				string item = currentRoom_->getRandomMiscItem();
+				pickup(item);
+				return true;
+			}
+			else if(currentRoom_->getConsumables().size() > 0)
+			{
+				string item = currentRoom_->getRandomConsumable();
+				pickup(item);
+				return true;
+			}
+			else if(currentRoom_->getEquipables().size() > 0)
+			{
+				string item = currentRoom_->getRandomEquipable();
+				pickup(item);
+				return true;
+			}
+			return false;
+		}
+		
+		// Tries to pickup a random character in the room.
+		bool Character::tryPickupRandomCharacter()
+		{
+			string tryCharacter = currentRoom_->getRandomCharacter();
+			Character * character = currentRoom_->getCharacter(tryCharacter);
+			
+			if(character != nullptr)
+			{
+				if(pickup(tryCharacter))
+				{
+					// Only display message if Player is there to hear it
+					if(currentRoom_->containsPlayer() || character->isControllable())
+					{
+						cout << name_ << " picked up " << character->getName() << "!" << endl;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
+		// Returns the multimap of characters for character
+		std::map<string, Character*>& Character::getCharacters()
+		{
+			return carriedCharacters_;
+		}
+
+		// Returns the multimap of consumables for character
+		std::multimap<std::string, Consumable*>& Character::getConsumables()
+		{
+			return carriedConsumables_;
+		}
+
+		// Returns the multimap of equipables for character
+		std::map<std::string, Equipable*>& Character::getEquipables()
+		{
+			return carriedEquipables_;
+		}
+
+		// Returns the multimap of equipables for character
+		std::multimap<std::string, Item*>& Character::getMiscItems()
+		{
+			return carriedMiscItems_;
+		}
+		
+		// Consumes a random consumable in inventory (if such exist).
+		bool Character::tryRandomConsume()
+		{
+			// TODO:
+			return false;
 		}
 
 		// Assigns left-hand Character to right-hand Character.

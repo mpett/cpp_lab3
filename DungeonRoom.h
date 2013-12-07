@@ -16,7 +16,7 @@ namespace GameLogic
 		~DungeonRoom();
 
 		// Constructor.
-		DungeonRoom(std::string description) : Environment(description){}
+		DungeonRoom(std::string description) : Environment(description, "Dungeon Room"){}
 
 		// Process event that may occur upon entering environment.
 		void onEntry(Character& character);
@@ -26,8 +26,5 @@ namespace GameLogic
 
 		// Process event that may occur while moving in room.
 		void turnEvent(Character& character);
-
-		// Assigns left-hand Environment to right-hand Environment.
-		virtual DungeonRoom& operator=(const DungeonRoom& env);
 	};
 }

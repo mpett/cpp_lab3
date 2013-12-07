@@ -1,68 +1,209 @@
+# READ CONSUMABLES
+3								# Number of consumables to be read.
+
+Apple							# Name
+1								# Id
+Food							# Type
+10								# Price
+0.2								# Weight
+1								# nrUses
+0							# Consumed on Pickup.
+5								# Health Affected (extra: food)
+
+Apple							# Name
+2								# Id
+Food							# Type
+10								# Price
+0.2								# Weight
+1								# nrUses
+0							# Consumed on Pickup.
+5								# Health Affected (extra: food)
+
+Apple							# Name
+13								# Id
+Food							# Type
+10								# Price
+0.2								# Weight
+2								# nrUses
+0							# Consumed on Pickup.
+7								# Health Affected (extra: food)
+
+
+# READ MISCITEMS
+4								# Number of misc items
+
+Key							# Name
+3								# Id
+Key							# Type
+0								# Price
+0.1								# Weight
+
+Towel							# Name
+4								# Id
+Cloth							# Type
+5								# Price
+1								# Weight
+
+Golden Key					# Name
+5								# Id
+Key							# Type
+0								# Price
+0.1								# Weight
+
+Old Paper						# Name
+6								# Id
+Paper							# Type
+1								# Price
+0.5								# Weight
+
+# READ EQUIPABLES
+
+6								# Number of Equipables
+
+Armor of Light				# Name
+7								# Id
+Normal Armor							# Type
+25								# Price
+30								# Weight
+1							# Equipped?
+You need to be strong.			# Requirement description
+10								# Max Health Increase
+5								# Strength Req
+
+Sword of Fury					# Name
+8								# Id
+Normal Sword						# Type
+25								# Price
+30								# Weight
+1							# Equipped?
+You need to be stronger.		# Requirement description
+3								# Min Damage Increase
+7								# Max Damage Increase
+5								# Strength Req
+
+Armor of Pain					# Name
+9								# Id
+Normal Armor							# Type
+25								# Price
+30								# Weight
+0							# Equipped?
+You need to be army strong.		# Requirement description
+-10								# Max Health Increase
+5								# Strength Req
+
+Crude Breastplate				# Name
+10								# Id
+Normal Armor							# Type
+5								# Price
+10								# Weight
+1							# Equipped?
+You need to be a bit strong.	# Requirement description
+3								# Max Health Increase
+2								# Strength Req
+
+Old Club						# Name
+11								# Id
+Normal Sword						# Type
+10								# Price
+5								# Weight
+1							# Equipped?
+You need to be weak.			# Requirement description
+1								# Min Damage Increase
+3								# Max Damage Increase
+2								# Strength Req
+
+Sword of Doom					# Name
+12							# Id
+Normal Sword						# Type
+1000							# Price
+10								# Weight
+0							# Equipped?
+Summon more strength.			# Requirement description
+100								# Min Damage Increase
+399								# Max Damage Increase
+20								# Strength Req
+
 # READ ROOMS
 2								# Number of rooms to be read.
 
-"Dungeon Room"					# Name of Room
-"Down"							# Exits
-"Sword of Doom"					# Equipables
-"Golden Key", "Old Paper"		# Misc Items
-"Hash brownie"					# Consumables
-"Blurgh"						# Characters
-"Apple Room"					# Neighbors
+Dungeon Room					# Type
+A dark room.					# Description
+Sword of Doom					# Equipables
+5,6			# Misc Items
+1								# Consumables
+								# Room requirements (string that is checked against character inventory)
 
-"Apple Room"					# Name of Room
-"Up"							# Exits
-""								# Equipables
-""								# Misc Items
-"Apple"							# Consumables
-"Joe"							# Characters
-"Dungeon Room"					# Neighbors
+Apple Room						# Type
+A very predictable room.      # Description
+								# Equipables
+								# Misc Items
+2								# Consumables
+Golden Key;Old Paper			# Room requirements (string that is checked against character inventory)
+
+# READ ROOM EXITS
+2
+Up,1						# Exits Room 1(string, index of room in master room vector)
+
+Down,0						# Exits Room 2(string, index of room in master room vector)
 
 # READ CHARACTERS
 2 								# Number of characters to be read.
 
-"Joe"							# Name of character.					
-"Human"							# Type
+0					            # Current room index
+Joe							# Name of character.				
+Human							# Type
 5								# Strength	
+50.3                            # Weight (personal)
 10								# Current Health
-10								# Maximum Health
+11								# Maximum Health
 5								# Minimum Damage
 10								# Maximum Damage
 0								# Current Carried
-10								# Maximum Carried
-"Armor of Light"				# Current equipped armor
-"Sword of Fury"					# Current equipped weapon
-"Hello", "Balls", "lol"			# Things to say
-"Apple Room"					# Current room
-true							# Can perform action?
-true							# Controllable?
-false							# At new room?
+100								# Maximum Carried
+Armor of Light				# Current equipped armor
+Sword of Fury					# Current equipped weapon
+Hello;Balls;lol			# Things to say
+1							# Can perform action?
+1							# Controllable?
+0							# At new room?
+0							# AI-Behavior (if NPC)
+								# InvMiscItems
+								# InvConsumables
+Armor of Light,Sword of Fury,Armor of Pain	# InvEquipables
 
-"Blurgh"						# Name of character.					
-"Goblin"						# Type
+1				                # Current room index
+Blurgh						# Name of character.					
+Goblin						# Type
 3								# Strength	
+15.5                            # Weight (personal)
 2								# Current Health
 5								# Maximum Health
 2								# Minimum Damage
 4								# Maximum Damage
 4								# Current Carried
-6								# Maximum Carried
-"Crude Breastplate"				# Current equipped armor
-"Old Club"						# Current equipped weapon
-"Ugh", "Blargh", "Blurbh"		# Things to say
-"Dungeon Room"					# Current room
-true							# Can perform action?
-false							# Controllable?
-false							# At new room?
+60								# Maximum Carried
+Crude Breastplate				# Current equipped armor
+Old Club						# Current equipped weapon
+Ugh;Blargh;Blurbh		# Things to say
+1							# Can perform action?
+0							# Controllable?
+0							# At new room?
+1							# AI-Behavior (if NPC)
+3,4					# InvMiscItems
+13						# InvConsumables
+Old Club,Crude Breastplate		# InvEquipables
 
 
-# READ CONSUMABLES
-2								# Number of consumables to be read.
+# READ CHARACTERS IN INVENTORY			
+2
 
+Joe							# Name of character with inventory
+Blurgh						# InvCharacters
 
-# READ MISCITEMS
+Blurgh						# Name of character with inventory
+							# InvCharacters
 
-# READ EQUIPABLES
+# READ WHICH CHARACTER WE SAVED AT
+1
 
-# READ MISC ITEMS
-
-
+Joe							# Name of character when saved

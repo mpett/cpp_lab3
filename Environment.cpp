@@ -3,7 +3,7 @@
 ///              It will typically have a description which will be displayed upon entering the room with a character controlled by the player.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-29
+///	Version: 2013-12-06
 
 #include <algorithm>
 #include "Environment.h"
@@ -65,8 +65,18 @@ namespace GameLogic
 		}
 		return ss.str();
 	}
+	
+	// Returns a random exit in this room.
+	string Environment::getRandomDirection() const
+	{
+		auto item = exits_.begin();
+		std::advance( item, rand()%exits_.size());
+		return item->first;
+	}
 
-	// Returns requirements for entering this room. Requirements are space separated.
+	// Returns requirements for entering this room. 
+	// Requirements are (at the moment) only item/Character names.
+	// Requirements are ; separated.
 	string Environment::roomRequirement() const
 	{
 		return roomRequirement_;
@@ -83,7 +93,7 @@ namespace GameLogic
 		{
 			for(auto character = characters_.begin(); character != characters_.end(); character++)
 			{
-				if(currentChar != character->second)
+				if(currentChar != character->second && character->second->isAlive())
 				{
 					ss << character->second->getName() << " (" << character->second->getType() << ")" << " ";
 				}
@@ -143,11 +153,46 @@ namespace GameLogic
 		return ss.str();
 	}
 
-	// Returns a string with detailed information about the contents of this room.
+	// Returns a detailed string representation of this room.
+	// Used when saving the game information to file.
 	string Environment::printEnvironment() const
 	{
-		//TODO
-		return "Nothing in this room... yet.";
+		std::stringstream ss;
+		ss << type_ << "\n" << description_ << "\n";
+		
+		// Find and add all equipables by name
+		bool first = true;
+		for(auto it = equipables_.begin(); it != equipables_.end(); it++)
+		{
+			if(!first) ss << ",";
+			ss << it->second->getName();
+			first = false;
+		}
+		ss << "\n";
+		
+		// Find and add all misc items (ids)
+		first = true;
+		for(auto it = miscItems_.begin(); it != miscItems_.end(); it++)
+		{
+			if(!first) ss << ",";
+			ss << it->second->getId();
+			first = false;
+		}
+		ss << "\n";
+		
+		// Find and add all consumables (ids)
+		first = true;
+		for(auto it = consumables_.begin(); it != consumables_.end(); it++)
+		{
+			if(!first) ss << ",";
+			ss << it->second->getId();
+			first = false;
+		}
+		ss << "\n";
+		
+		ss << roomRequirement_ << "\n";
+		
+		return ss.str();
 	}
 
 	// Returns the neighboring environment to an exit direction.
@@ -169,10 +214,52 @@ namespace GameLogic
 		description_ = description;
 	}
 
+	// Returns the description (short) of this room.
+	std::string Environment::getShortDescription() const
+	{
+		return description_;
+	}
+
 	// Sets room requirement string of this room.
+	// Requirements are (at the moment) only item/Character names.
+	// Requirements are ; separated.
 	void Environment::setRoomRequirement(string requirement)
 	{
 		roomRequirement_ = requirement;
+	}
+	
+	/// Checks if character has fulfilled the room requirement(s).
+	/// (i.e. if he/she has all of the items/characters listed)
+	bool Environment::checkRoomRequirement(Character &character)
+	{
+		string delimiter = ";";
+		size_t pos = 0;
+		string currReq;
+		string readLine = roomRequirement_;
+		// Find all requirements
+		while ((pos = readLine.find(delimiter)) != std::string::npos) 
+		{
+			currReq = readLine.substr(0, pos);
+			// At least one item/character must match requirement
+			if(character.getInvMiscItem(currReq) == nullptr && character.getInvEquipable(currReq) == nullptr && character.getInvConsumable(currReq) == nullptr && character.getInvCharacter(currReq) == nullptr)
+			{
+				return false;
+			}
+			readLine.erase(0, pos + delimiter.length());
+		}
+		if(readLine.find(delimiter) == string::npos)
+		{
+			if(readLine != "")
+			{
+				currReq = readLine;
+				// At least one item/character must match requirement
+				if(character.getInvMiscItem(currReq) == nullptr && character.getInvEquipable(currReq) == nullptr && character.getInvConsumable(currReq) == nullptr && character.getInvCharacter(currReq) == nullptr)
+				{
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	// Adds a neigboring environment to this room. Takes environment reference with direction.
@@ -243,10 +330,78 @@ namespace GameLogic
 		key.erase(remove(key.begin(),key.end(),' '),key.end());  // Trim whitespaces
 
 		auto it = characters_.find(key);
-		if(it == characters_.end())
+		if(it == characters_.end() || !it->second->isAlive())
 			return nullptr;
 		else
 			return it->second;
+	}
+	
+	// Returns a random character.
+	string Environment::getRandomCharacter() const
+	{
+		if(characters_.size() > 0)
+		{
+			auto character = characters_.begin();
+			std::advance( character, rand()%characters_.size());
+			if(character->second->isAlive())
+			{
+				return character->first;
+			}
+		}
+		return "";
+	}
+	
+	// Returns a random miscItem.
+	string Environment::getRandomMiscItem() const
+	{
+		if(miscItems_.size() > 0)
+		{
+			auto item = miscItems_.begin();
+			std::advance( item, rand()%miscItems_.size());
+			return item->first;
+		}
+		return "";
+	}
+	
+	// Returns a random consumable.
+	string Environment::getRandomConsumable() const
+	{
+		if(consumables_.size() > 0)
+		{
+			auto item = consumables_.begin();
+			std::advance( item, rand()%consumables_.size());
+			return item->first;
+		}
+		return "";
+	}
+	
+	// Returns a random equipable.
+	string Environment::getRandomEquipable() const
+	{
+		if(equipables_.size() > 0)
+		{
+			auto item = equipables_.begin();
+			std::advance( item, rand()%equipables_.size());
+			return item->first;
+		}
+		return "";
+	}
+	
+	// Returns true if the room contains a player (i.e. controllable character)
+	bool Environment::containsPlayer() const
+	{
+		// Characters
+		if(characters_.size() > 0)
+		{
+			for(auto character = characters_.begin(); character != characters_.end(); character++)
+			{
+				if(character->second->isAlive() && character->second->isControllable())
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	// Adds the pointer to Item to room. 
@@ -350,12 +505,33 @@ namespace GameLogic
 		return characters_;
 	}
 
+	// Returns the multimap of consumables for room
+	std::multimap<std::string, Consumable*>& Environment::getConsumables()
+	{
+		return consumables_;
+	}
+
+	// Returns the multimap of equipables for room
+	std::map<std::string, Equipable*>& Environment::getEquipables()
+	{
+		return equipables_;
+	}
+
+	// Returns the multimap of equipables for room
+	std::multimap<std::string, Item*>& Environment::getMiscItems()
+	{
+		return miscItems_;
+	}
+
 	// Goes through all Characters and enables them to do actions for the next turn.
 	void Environment::enableCharacterActions()
 	{
 		for(auto it = characters_.begin(); it != characters_.end(); it++)
 		{
-			it->second->setCanPerformAction(true);
+			if(it->second->isAlive())
+			{
+				it->second->setCanPerformAction(true);
+			}
 		}
 	}
 
@@ -364,5 +540,17 @@ namespace GameLogic
 	{
 		//TODO: Implement this?
 		return *this;
+	}
+
+	// Returns the type of this room.
+	std::string Environment::getType() const
+	{
+		return type_;
+	}
+
+	// Returns the map of all exits.
+	std::map<std::string, Environment*> Environment::getExits() const
+	{
+		return exits_;
 	}
 }

@@ -1,7 +1,7 @@
 /// Description: Header file for GameEngine class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-27
+///	Version: 2013-12-05
 #pragma once
 #include <string>
 #include <vector>
@@ -10,7 +10,7 @@
 
 namespace GameLogic
 {
-	static const std::string version = "0.30";
+	static const std::string version = "0.40";
 	static const std::string gameTitle             = "**************************************\n"
 		                                             "****** ________________________ ******\n"
 		                                             "*****//                        \\\\*****\n"
@@ -68,6 +68,9 @@ namespace GameLogic
 		// Parses input string from player console.
 		void processPlayerTurn(Character& character);
 
+		// What might this function do?
+		void bonus();
+		
 		// "Clears" the terminal window.
 		void clearScreen();
 

@@ -2,7 +2,7 @@
 ///				 Its statistics are fairly normal.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-12-06
 
 #include "Human.h"
 #include <iostream>
@@ -17,12 +17,5 @@ namespace GameLogic
 	Human::~Human()
 	{
 		//TODO: Free Human related allocated memory here
-	}
-
-	// Does an action with the Human. 
-	// An action can be anything from fight, go, talk etc.
-	void Human::action()
-	{
-		cerr << "Im a Human!" << endl;
 	}
 }

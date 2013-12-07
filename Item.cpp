@@ -5,10 +5,17 @@
 ///	Version: 2013-11-24
 
 #include "Item.h"
+#include <sstream>
 using std::string;
 
 namespace GameLogic
 {
+	// Returns the unique id of this item.
+	int Item::getId() const
+	{
+		return myId_;
+	}
+
 	// Returns the name for this item.
 	string Item::getName() const 
 	{
@@ -22,10 +29,18 @@ namespace GameLogic
 	}
 
 	// Returns a detailed string representation of this item.
+	// Used when saving the game information to file.
+	// Format: 
+	// Name
+	// Id
+	// Type
+	// Price
+	// Weight
 	string Item::printItem() const
 	{
-		//TODO
-		return "This is not an item.";
+		std::stringstream ss;
+		ss << name_ << "\n" << myId_ << "\n" << type_ << "\n" << price_ << "\n" << weight_ << "\n";
+		return ss.str();
 	}
 
 	// Returns the price for this item.

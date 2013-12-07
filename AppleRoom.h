@@ -16,8 +16,8 @@ namespace GameLogic
 		~AppleRoom();
 
 		// Constructor.
-		AppleRoom(std::string description) : Environment(description){}
-
+		AppleRoom(std::string description) : Environment(description, "Apple Room"){}
+		
 		// Process event that may occur upon entering environment.
 		void onEntry(Character& character);
 

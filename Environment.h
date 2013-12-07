@@ -1,7 +1,7 @@
 /// Description: Header file for Environment class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-12-06
 #pragma once
 #include "Equipable.h"
 #include "Consumable.h"
@@ -23,12 +23,21 @@ namespace GameLogic
 		~Environment();
 
 		// Constructor.
-		Environment(std::string description) : description_(description){}
+		Environment(std::string description, std::string type) : type_(type), description_(description){}
 
 		// Returns available exits in this room.
 		std::string directions() const;
 
-		// Returns requirements for entering this room. Requirements are space separated.
+		// Returns a random exit in this room.
+		std::string getRandomDirection() const;
+		
+		/// Checks if character has fulfilled the room requirement(s).
+		/// (i.e. if he/she has all of the items/characters listed)
+		bool checkRoomRequirement(Character &character);
+		
+		// Returns requirements for entering this room. 
+		// Requirements are (at the moment) only item/Character names.
+		// Requirements are ; separated.
 		std::string roomRequirement() const;
 
 		// Returns a string containing contents of the current environment, with characters, items and exits.
@@ -37,7 +46,8 @@ namespace GameLogic
 		// Returns the description of this room.
 		std::string getDescription(const Character * currentChar) const;
 
-		// Returns a string with detailed information about the contents of this room.
+		// Returns a detailed string representation of this room.
+		// Used when saving the game information to file.
 		virtual std::string printEnvironment() const;
 
 		// Returns the neighboring environment to an exit direction.
@@ -46,7 +56,12 @@ namespace GameLogic
 		// Sets the description of this room.
 		void setDescription(std::string description);
 
+		// Returns the description (short) of this room.
+		std::string getShortDescription() const;
+
 		// Sets room requirement string of this room.
+		// Requirements are (at the moment) only item/Character names.
+		// Requirements are ; separated.
 		void setRoomRequirement(std::string requirement);
 
 		// Adds a neigboring environment to this room. Takes environment reference with direction.
@@ -75,6 +90,21 @@ namespace GameLogic
 
 		// Returns pointer to Character if it exists in this room. Otherwise returns nullptr.
 		Character* getCharacter(std::string key) const;
+		
+		// Returns a random character.
+		std::string getRandomCharacter() const;
+		
+		// Returns a random miscItem.
+		std::string getRandomMiscItem() const;
+		
+		// Returns a random consumable.
+		std::string getRandomConsumable() const;
+		
+		// Returns a random equipable.
+	    std::string getRandomEquipable() const;
+		
+		// Returns true if the room with the Character contains another player (i.e. controllable character)
+		bool containsPlayer() const;
 
 		// Adds the pointer to Item to room. 
 		void addMiscItem(Item* item);
@@ -107,13 +137,29 @@ namespace GameLogic
 		// Returns the multimap of characters for room
 		std::map<std::string, Character*>& getCharacters();
 
+		// Returns the multimap of consumables for room
+		std::multimap<std::string, Consumable*>& getConsumables();
+
+		// Returns the multimap of equipables for room
+		std::map<std::string, Equipable*>& getEquipables();
+
+		// Returns the multimap of misc items for room
+		std::multimap<std::string, Item*>& getMiscItems();
+
 		// Goes through all Characters and enables them to do actions for the next turn.
 		void enableCharacterActions();
 
 		// Assigns left-hand Environment to right-hand Environment.
 		virtual Environment& operator=(const Environment& env);
+
+		// Returns the type of this room.
+		std::string getType() const;
+
+		// Returns the map of all exits.
+		std::map<std::string, Environment*> getExits() const;
 		
 	protected:
+		std::string type_;
 		std::string description_;
 		std::string roomRequirement_;
 		std::map<std::string, Environment*> exits_;

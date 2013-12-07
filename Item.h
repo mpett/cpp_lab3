@@ -7,11 +7,20 @@
 
 namespace GameLogic
 {
+	// Global Item ID.
+	static int ITEM_ID;
+
 	class Item 
 	{
 	public:
 		// Constructor of Item class.
-		Item(std::string name, std::string type, int price, double weight) : name_(name), type_(type), price_(price), weight_(weight){}
+		Item(std::string name, std::string type, int price, double weight, int id) : name_(name), type_(type), price_(price), weight_(weight), myId_(id){}
+
+		// Constructor of Item class.
+		Item(std::string name, std::string type, int price, double weight) : name_(name), type_(type), price_(price), weight_(weight){myId_ = ITEM_ID; ITEM_ID++;}
+
+		// Returns the unique id of this item.
+		int getId() const;
 
 		// Returns the name for this item.
 		std::string getName() const; 
@@ -20,6 +29,7 @@ namespace GameLogic
 		std::string getType() const;
 
 		// Returns a detailed string representation of this item.
+		// Used when saving the game information to file.
 		virtual std::string printItem() const;
 
 		// Returns the price for this item.
@@ -48,6 +58,7 @@ namespace GameLogic
 		std::string type_;
 		int price_;
 		double weight_;	
+		int myId_;
 	};
 }
 

@@ -1,7 +1,7 @@
 /// Description: Header file for Human class, inherits from Character class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-12-06
 #pragma once
 #include <string>
 #include "Character.h"
@@ -18,22 +18,24 @@ namespace GameLogic
 		~Human();
 
 		 // Constructor for character. Set every variable.
-		 Human(bool controllable, std::string name, std::string type, double weight, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Environment* room)
-			 : Character(controllable, name, type, weight, strength, currentHealth, maxHealth, minDamage, maxDamage, currentCarried, maxCarried, room)
+		 Human(bool controllable, std::string name, std::string type, double weight, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Equipable * currentArmor, Equipable * currentWeapon, bool canPerformAction, bool atNewRoom, Environment* room)
+			 : Character(controllable, name, type, weight, strength, currentHealth, maxHealth, minDamage, maxDamage, currentCarried, maxCarried, currentArmor, currentWeapon, canPerformAction, atNewRoom,  room)
 		 { 
-
 			 // TODO: Add Human specific initialization here
 		 }
 
 		// Constructor. Generate some of the variables automatically.
+		Human(bool controllable, std::string name, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Environment* room)
+			: Character(controllable, name, "Human", (((double)rand()/RAND_MAX)*(HUMAN_MAX_WEIGHT-HUMAN_MIN_WEIGHT)+HUMAN_MIN_WEIGHT), strength, currentHealth, maxHealth, minDamage, maxDamage, currentCarried, maxCarried, room)
+		{
+			// TODO: Add Human specific initialization here
+		}
+		
+		// Constructor. Generate some of the variables automatically (set type explicitly).
 		Human(bool controllable, std::string name, std::string type, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Environment* room)
 			: Character(controllable, name, type, (((double)rand()/RAND_MAX)*(HUMAN_MAX_WEIGHT-HUMAN_MIN_WEIGHT)+HUMAN_MIN_WEIGHT), strength, currentHealth, maxHealth, minDamage, maxDamage, currentCarried, maxCarried, room)
 		{
 			// TODO: Add Human specific initialization here
 		}
-
-		// Does an action with the Human. 
-		// An action can be anything from fight, go, talk etc.
-		void action();
 	};
 }

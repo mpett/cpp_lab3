@@ -21,6 +21,8 @@ TO-DO:
 - Help      X
 - Talk		X
 - Consume	X
+- Fix requirement to room  X
+- AI-Behaviors X
 -------------
 
 3.1 - Uppslagning av funktion (krav för D) 6p                                                              X
@@ -30,8 +32,8 @@ TO-DO:
 	- new under körning (? - skapa nytt spel? - gör annars ett äppelträd där man kan plocka på sig äpplen) X
 
 Tillägg till basversion:
-3.2 - Spara/ladda spel till/från fil 4p
-3.3 - Ladda kartor/objekt från fil 5p
+3.2 - Spara/ladda spel till/från fil 4p /
+3.3 - Ladda kartor/objekt från fil 5p   /
 
 Efter spelet är klart
 3.7 - Rita lite UML diagram, skriv ner några scenarion 4p

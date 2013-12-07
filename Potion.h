@@ -17,12 +17,24 @@ namespace GameLogic
 		// Potion constructor.
 		Potion(std::string name, int price, double weight, int nrUses, bool consumedOnPickUp, int healthAffected) : Consumable(name, "Potion", price, weight, nrUses, consumedOnPickUp), healthAffected_(healthAffected){}
 
+		// Potion constructor.
+		Potion(std::string name, std::string type, int price, double weight, int nrUses, bool consumedOnPickUp, int healthAffected, int id) : Consumable(name, type, price, weight, nrUses, consumedOnPickUp, id)
+		{
+			healthAffected_ = healthAffected;
+		}
+		
+		// Returns a detailed string representation of this item.
+		// Used when saving the game information to file.
+		virtual std::string printItem() const;
+
 		// Applies the effect a potion has on the character.
 		void applyEffect(Character& character);
 
+		// Returns health affected.
+		int getHealthAffected() const;
+
 	private:
 		int healthAffected_;
-
 	};
 
 }

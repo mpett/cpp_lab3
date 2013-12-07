@@ -38,15 +38,9 @@ namespace GameLogic
 	// Process event that may occur while moving in room.
 	void DungeonRoom::turnEvent(Character& character)
 	{
-		if(character.isControllable())
+		if(character.getCanPerformAction())
 		{
 			cout << "New turn" << endl;
 		}
-	}
-
-	// Assigns left-hand Environment to right-hand Environment.
-	DungeonRoom& DungeonRoom::operator=(const DungeonRoom& env)
-	{
-		return *this;
 	}
 }

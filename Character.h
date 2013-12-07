@@ -1,7 +1,7 @@
 /// Description: Header file for Character class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-27
+///	Version: 2013-12-07
 #pragma once
 #include "Item.h"
 #include "Equipable.h"
@@ -17,6 +17,22 @@ using std::endl;
 
 namespace GameLogic
 {
+	// Different AI behaviors - used when calling actions() with a NPC.
+	enum AI_BEHAVIOR
+	{
+		STAND_STILL     = 0,	// NPC will only stand still with this behavior              
+		PACIFIST        , 		// NPC will move around and talk with this behavior          
+		PASSIVE_LOOTER  , 		// NPC will move around and pickup items with this behavior  
+		AGGRESSIVE_AMOVE ,		// NPC will move around, attacking anything it encounters    
+		AMOVE,            		// NPC will move around at random, attacking any player character it encounters          
+		AGGRESSIVE_GUARD, 		// NPC will remain in room but will attack anything it encounters (even other NPCs) 
+		GUARD,            		// NPC will remain in room, will attack any player character it encounters          
+		DO_NOT_HIT_ME   , 		// NPC will remain docile (and stand still) as long as nobody hits it - then it will go to AGGRESSIVE_AMOVE behavior.
+		COLLECTOR       ,       // NPC will pickup anything it encounters (and have capacity to pickup) - that includes characters so beware! 
+		CRAZY           ,  		// NPC will try to do all sorts of actions with all sorts of objects
+		
+	};
+	
 	// Forward declaration(s) solves circular dependancies
 	class Consumable;
 	class Environment;
@@ -28,10 +44,20 @@ namespace GameLogic
 		// Destructor to character.
 		 ~Character();
 
+		 // Constructor for character. Used for loading a character.
+		 Character(bool controllable, std::string name, std::string type, double weight, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Equipable * currentArmor, Equipable * currentWeapon, bool canPerformAction, bool atNewRoom, Environment* room) : 
+			 name_(name), type_(type), weight_(weight), strength_(strength), currentHealth_(currentHealth), maxHealth_(maxHealth), minDamage_(minDamage), maxDamage_(maxDamage), currentCarried_(currentCarried), maxCarried_(maxCarried), currentEquippedArmor_(currentArmor), currentEquippedWeapon_(currentWeapon), canPerformAction_(canPerformAction), controllable_(controllable), atNewRoom_(atNewRoom) 
+		 {
+			 aiBehavior_ = AI_BEHAVIOR::STAND_STILL; // Default
+			 currentRoom_           = nullptr;
+			 setCurrentRoom(room, false);
+		 }
+		 
 		 // Constructor for character. 
 		 Character(bool controllable, std::string name, std::string type, double weight, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Environment* room) : 
-			 name_(name),type_(type), weight_(weight), strength_(strength),currentHealth_(currentHealth),maxHealth_(maxHealth),minDamage_(minDamage),maxDamage_(maxDamage),currentCarried_(currentCarried), maxCarried_(maxCarried), controllable_(controllable) 
+			 name_(name), type_(type), weight_(weight), strength_(strength), currentHealth_(currentHealth), maxHealth_(maxHealth), minDamage_(minDamage), maxDamage_(maxDamage), currentCarried_(currentCarried), maxCarried_(maxCarried), controllable_(controllable) 
 		 { 
+			 aiBehavior_ = AI_BEHAVIOR::STAND_STILL; // Default
 			 currentEquippedArmor_  = nullptr;
 			 currentEquippedWeapon_ = nullptr;
 			 currentRoom_           = nullptr;
@@ -39,7 +65,8 @@ namespace GameLogic
 			 setCurrentRoom(room, false);
 		 }
 
-		// Removes the character from its room (drops its items as loot if specified) and then deletes it by running its destructor.
+		// Drops the loot of the character into the room (if dropLoot is specified as true).
+		// NOTE: Character must be removed from room and deleted in GameEngine game loop.
 		virtual void killCharacter(bool dropLoot);
 
 		// Returns the name of the character.
@@ -57,7 +84,8 @@ namespace GameLogic
 		// Prints a description of the current room; lists all characters, items and exits (in the room).
 		bool look(std::string);
 
-		// Returns a string with detailed information about this character.
+		// Returns a detailed string representation of this character.
+		// Used when saving the game information to file.
 		virtual std::string printCharacter() const;
 
 		// Returns if the Character is in a new room
@@ -116,7 +144,8 @@ namespace GameLogic
 
 		// Does an action with the character. 
 		// An action can be anything from fight, go, talk etc.
-		virtual void action() = 0;
+		// This should typically only be called on NPCs.
+		virtual void action();
 
 		// Adds an sentence to things that the character can say when talked to.
 		void addThingToSay(std::string sentence);
@@ -180,6 +209,9 @@ namespace GameLogic
 
 		// Sets the maximum weight that can be carried by character to input.
 		void setMaxCarried(double carried);
+		
+		// Sets the AI Behavior to be used when character is not controlled by a player.
+		void setAIBehavior(int behavior);
 
 		// Sets which room that the character is currently in.
 		// (Removes character from previous room and adds it to the new room)
@@ -243,6 +275,40 @@ namespace GameLogic
 		// Assigns left-hand Character to right-hand Character.
 		virtual Character& operator=(const Character& env);
 		
+		/** NPC RELEVANT FUNCTIONS **/
+		// Tries to move in a random direction.
+		bool tryRandomMove();
+		
+		// Tries to say something random.
+		bool tryRandomSpeak();
+		
+		// Tries to attack a random target (including NPC).
+		bool tryRandomAttackAll();
+		
+		// Tries to attack a "random" character (excluding other NPCs).
+		bool tryRandomAttack();
+		
+		// Tries to pickup a random item in the room.
+		bool tryPickupRandomItem();
+		
+		// Tries to pickup a random character in the room.
+		bool tryPickupRandomCharacter();
+		
+		// Consumes a random consumable in inventory (if such exist).
+		bool tryRandomConsume();
+
+		// Returns the multimap of characters for character
+		std::map<std::string, Character*>& getCharacters();
+
+		// Returns the multimap of consumables for character
+		std::multimap<std::string, Consumable*>& getConsumables();
+
+		// Returns the multimap of equipables for character
+		std::map<std::string, Equipable*>& getEquipables();
+
+		// Returns the multimap of misc items for character
+		std::multimap<std::string, Item*>& getMiscItems();
+		
 	protected:
 		std::string name_;
 		std::string type_;
@@ -261,6 +327,7 @@ namespace GameLogic
 		bool canPerformAction_;
 		bool controllable_;
 		bool atNewRoom_;
+		int aiBehavior_; // Only used if uncontrollable
 
 		// Inventory
 		std::multimap<std::string, Item*> carriedMiscItems_;

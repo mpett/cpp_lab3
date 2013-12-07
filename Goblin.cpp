@@ -2,7 +2,7 @@
 ///              They are typically uncontrollable (i.e. aggressive NPC).
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-22
+///	Version: 2013-12-06
 
 #include "Goblin.h"
 #include <iostream>
@@ -17,12 +17,5 @@ namespace GameLogic
 	Goblin::~Goblin()
 	{
 		//TODO: Free Goblin related allocated memory here
-	}
-
-	// Does an action with the Goblin. 
-	// An action can be anything from fight, go, talk etc.
-	void Goblin::action()
-	{
-		cerr << "Im a Goblin - I want to kill you!" << endl;
 	}
 }

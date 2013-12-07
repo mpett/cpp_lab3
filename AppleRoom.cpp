@@ -4,7 +4,7 @@
 ///	Version: 2013-11-29
 
 #include "AppleRoom.h"
-#include "Apple.h"
+#include "Food.h"
 #include <iostream>
 using std::string;
 using std::cout;
@@ -42,7 +42,7 @@ namespace GameLogic
 		// Time to add a new apple! :D
 		if(getConsumable("Apple") == nullptr)
 		{
-			addConsumable(new Apple());
+			addConsumable(new Food("Apple"));
 			if(character.isControllable())
 			{
 				cout << "Another apple appeared in the apple room." << endl;
