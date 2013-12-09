@@ -2,7 +2,7 @@
 ///				 Its statistics are fairly normal.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-06
+///	Version: 2013-12-09
 
 #include "Human.h"
 #include <iostream>

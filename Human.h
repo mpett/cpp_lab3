@@ -1,7 +1,7 @@
 /// Description: Header file for Human class, inherits from Character class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-06
+///	Version: 2013-12-08
 #pragma once
 #include <string>
 #include "Character.h"
@@ -15,7 +15,7 @@ namespace GameLogic
 	{
 	public:
 		// Destructor
-		~Human();
+		virtual ~Human();
 
 		 // Constructor for character. Set every variable.
 		 Human(bool controllable, std::string name, std::string type, double weight, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Equipable * currentArmor, Equipable * currentWeapon, bool canPerformAction, bool atNewRoom, Environment* room)

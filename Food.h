@@ -14,13 +14,13 @@ namespace GameLogic
 	class Food : public Consumable
 	{
 	public:
-		// Apple constructor.
+		// Food constructor.
 		Food(std::string name) : Consumable(name, "Food", 5, 0.1, 1, false)
 		{
 			healthAffected_ = rand()%10-rand()%5;
 		}
 
-		// Apple constructor.
+		// Food constructor.
 		Food(std::string name, std::string type, int price, double weight, int nrUses, bool consumedOnPickUp, int healthAffected, int id) : Consumable(name, type, price, weight, nrUses, consumedOnPickUp, id)
 		{
 			healthAffected_ = healthAffected;

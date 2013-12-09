@@ -1,7 +1,7 @@
 /// Description: Entry point for running program.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-12-09
 
 #include "GameEngine.h"
 using namespace GameLogic;

@@ -2,7 +2,7 @@
 /// When an item is consumed it may apply an effect on its consuming character.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-12-09
 #include "Consumable.h"
 #include <sstream>
 using std::string;
@@ -30,6 +30,12 @@ namespace GameLogic
 		return nrUses_ <= 0;
 	}
 
+	// Returns health affected by item.
+	int Consumable::getHealthAffected() const
+	{
+		return 0;
+	}
+	
 	// Returns the number of charges/uses of this consumable item.
 	int Consumable::getNrUses() const
 	{
@@ -46,13 +52,6 @@ namespace GameLogic
 	bool Consumable::isConsumedOnPickup() const
 	{
 		return consumedOnPickUp_;
-	}
-
-	// Assigns left-hand Consumable to right-hand Consumable.
-	Consumable& Consumable::operator=(const Consumable& env)
-	{
-		//TODO
-		return *this;
 	}
 }
 

@@ -2,7 +2,7 @@
 ///				 When equipped, the character may be passed on an effect.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-07
+///	Version: 2013-12-09
 #include "Equipable.h"
 using std::string;
 
@@ -36,13 +36,5 @@ namespace GameLogic
 	{
 		return requirementDesc_;
 	}
-
-	// Assigns left-hand Equipable to right-hand Equipable.
-	Equipable& Equipable::operator=(const Equipable& env)
-	{
-		//TODO
-		return *this;
-	}
-	
 }
 

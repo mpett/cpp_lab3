@@ -1,16 +1,19 @@
 /// Description: Header file for GameEngine class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-05
+///	Version: 2013-12-09
 #pragma once
 #include <string>
 #include <vector>
 #include <map>
+#include <limits>
+#include <iostream>
 #include "Environment.h"
+#include "Character.h"
 
 namespace GameLogic
 {
-	static const std::string version = "0.40";
+	static const std::string version = "0.95";
 	static const std::string gameTitle             = "**************************************\n"
 		                                             "****** ________________________ ******\n"
 		                                             "*****//                        \\\\*****\n"
@@ -55,6 +58,18 @@ namespace GameLogic
 	{
 	public:
 		typedef bool (Character::*ACT_PTR) (std::string); // Declare a member function pointer type
+		
+		// Shows a message to user and holds continuation of program until enter is pressed.
+		static void pressEnterToContinue();
+		
+		// Returns the nr of characters (width) of console.
+		static int GetConsoleBufferWidth();
+		
+		// You have won the game!
+		static void winGame();
+		
+		// Outputs formatted string (with newlines inserted after or before words) to std::cout
+		static void FormattedOutput(std::string str);
 
 		// Destructor
 		~GameEngine();
@@ -73,9 +88,6 @@ namespace GameLogic
 		
 		// "Clears" the terminal window.
 		void clearScreen();
-
-		// Returns true if this game has reached an end.
-		bool gameOver() const;
 
 		// Loads a saved game state from file.
 		bool loadGame(std::string file);
@@ -103,6 +115,21 @@ namespace GameLogic
 		std::string getMainMenu() const;
 	
 	private:
+		// Prints character along with each character in its inventory
+		void printInvCharacters(Character& character, std::stringstream& ss, int& nrCharacters) const;
+		
+		// Prints relations between characters (i.e. characters in inventory)
+		void printInvCharRel(Character& character, std::stringstream& ss, int& nrCharacters) const;
+		
+		// Returns the index of room in environments_.
+		int getIndexRoom(Environment* env) const;
+		
+		// Updates the non-player characters (their turn)
+		void updateNPC();
+		
+		// Updates the player characters (their turn)
+		bool updatePC(bool useStartValues);
+	
 		std::vector<Environment*> environments_;
 		std::map<std::string, ACT_PTR> actions_;
 	};

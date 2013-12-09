@@ -1,7 +1,7 @@
 /// Description: Header file for Environment class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-06
+///	Version: 2013-12-09
 #pragma once
 #include "Equipable.h"
 #include "Consumable.h"
@@ -20,7 +20,7 @@ namespace GameLogic
 	{
 	public:
 		// Destructor.
-		~Environment();
+		virtual ~Environment();
 
 		// Constructor.
 		Environment(std::string description, std::string type) : type_(type), description_(description){}
@@ -31,14 +31,18 @@ namespace GameLogic
 		// Returns a random exit in this room.
 		std::string getRandomDirection() const;
 		
-		/// Checks if character has fulfilled the room requirement(s).
+		/// Checks if character has fulfilled the direction requirement(s).
 		/// (i.e. if he/she has all of the items/characters listed)
-		bool checkRoomRequirement(Character &character);
+		bool checkDirectionRequirement(std::string dir, Character &character);
 		
-		// Returns requirements for entering this room. 
+		// Returns requirements for all directions leaving this room. 
 		// Requirements are (at the moment) only item/Character names.
 		// Requirements are ; separated.
 		std::string roomRequirement() const;
+
+		// Returns requirements for the direction from this room. 
+		// Requirements are (at the moment) only item/Character names.
+		std::string directionRequirement(std::string) const;
 
 		// Returns a string containing contents of the current environment, with characters, items and exits.
 		std::string getRoomContent(const Character * character) const;
@@ -59,7 +63,9 @@ namespace GameLogic
 		// Returns the description (short) of this room.
 		std::string getShortDescription() const;
 
-		// Sets room requirement string of this room.
+		// Sets the direction requirement string (all directions requirements) of this room.
+		// E.g NORTH,key; SOUTH,ball
+		//     NORTH,key,ball,sword; SOUTH,ball
 		// Requirements are (at the moment) only item/Character names.
 		// Requirements are ; separated.
 		void setRoomRequirement(std::string requirement);
@@ -149,19 +155,16 @@ namespace GameLogic
 		// Goes through all Characters and enables them to do actions for the next turn.
 		void enableCharacterActions();
 
-		// Assigns left-hand Environment to right-hand Environment.
-		virtual Environment& operator=(const Environment& env);
-
 		// Returns the type of this room.
 		std::string getType() const;
 
 		// Returns the map of all exits.
-		std::map<std::string, Environment*> getExits() const;
+		std::map<std::string, Environment*>& getExits();
 		
 	protected:
 		std::string type_;
 		std::string description_;
-		std::string roomRequirement_;
+		std::string directionRequirement_;
 		std::map<std::string, Environment*> exits_;
 
 		// Inventory

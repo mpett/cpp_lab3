@@ -1,0 +1,213 @@
+intro = "...As you journey deeper down into the dungeon you begin to wonder if this stair will ever come to an end. Suddenly, just before you were starting to think about going up, the stairs come to an end. Finally! Now it is time to find the treasure room, once done you will be financially secure for the rest of your life. If you now could only find a way to regain some strength so that you can use your bow thne everything should be easier than stealing money from a nobleman...";
+		outro = "The glittering of the treasure is so bright that you need to shield your eyes. Such richness! You begin to pack the treasure into your backpack, grinning widely whilst doing so.";
+		newGame = true;
+		
+		Environment *env1 = new DungeonRoom("A dimly lit room. You see an open gate to the north of you.");
+		Environment *env2 = new DungeonRoom("You stand in large room. There are four exits around you. You see some faint shimmering to the north.");
+		Environment *env3 = new DungeonRoom("A long corridor lit by some torches, struggling to maintain their glow.");
+		Environment *env4 = new DungeonRoom("You stand in a library with a crackling fireplace. Before the fireplace you see the faint contour of a door.");
+		Environment *env5 = new DungeonRoom("A large greenish cavern. The smell of sulphur is everywhere.");
+		Environment *env6 = new DungeonRoom("You are in a small cupboard. You are barely able to sit in here.");
+		Environment *env7 = new DungeonRoom("A decorative kitchen. All around you there is food and dinner plates, even though most of them seem unused. There is also an old cupboard in here.");
+		Environment *env8 = new GoalRoom("You stand inside of the treasure room. Loads of treasure are scattered around the room.");
+		Environment *env9 = new AppleRoom("You see a large apple tree."); 
+		Environment *env10 = new DungeonRoom("You are in a prison. The stench is everywhere!");
+		Environment *env11 = new DungeonRoom("A small room with four walls. There seems to be something reminiscant of a bench in the corner.");
+
+		// Entry
+		env1->addNeigbor(env2, "NORTH");
+		
+		// Great hall
+		env2->addNeigbor(env1, "SOUTH");
+		env2->addNeigbor(env3, "WEST");
+		env2->addNeigbor(env7, "EAST");
+		env2->addNeigbor(env8, "NORTH");
+		
+		// Corridor
+		env3->addNeigbor(env2, "EAST");
+		env3->addNeigbor(env4, "NORTH");
+		env3->addNeigbor(env10, "GUARD ROOM");
+		
+		// Library
+		env4->addNeigbor(env3, "SOUTH");
+		env4->addNeigbor(env5, "TELEPORT");
+		
+		// Cave
+		env5->addNeigbor(env6, "CRACKED WALL");
+		env5->addNeigbor(env9, "OPENING");
+
+		// Apple room
+		env9->addNeigbor(env5, "CAVE");
+		
+		// Cupboard
+		env6->addNeigbor(env7, "DOOR");
+		
+		// Kitchen
+		env7->addNeigbor(env6, "CUPBOARD");
+		env7->addNeigbor(env2, "WEST");
+		
+		// Treasure
+		env8->addNeigbor(env2, "SOUTH");
+
+		// Prison
+		env10->addNeigbor(env3, "CORRIDOR");
+		env10->addNeigbor(env11, "CELL");
+
+		// Prison cell
+		env11->addNeigbor(env10, "GUARD ROOM");
+		
+		env2->setRoomRequirement("East,Kitchen Key;North,Treasure Room Key");
+		env4->setRoomRequirement("teleport,Teleport Crystal");
+		env5->setRoomRequirement("CRACKEDWALL,Pick-axe");
+		env7->setRoomRequirement("West,Kitchen key");
+		env8->setRoomRequirement("SOUTH,Treasure Room Key");
+		env10->setRoomRequirement("Cell,Cell Key");
+		env11->setRoomRequirement("Guardroom,Cell Key");
+		
+		// std::string name, int price, double weight, int minDamageIncr, int maxDamageIncr, int strengthReq) : Equipable(name, "Normal Sword", price, weight
+		// std::string name, int price, double weight, int maxHealthIncr, int strengthReq) : Equipable(name, "Normal Armor", price, weight
+		Equipable *eqItem1 = new NormalSword("Wheatley's Short Sword", 30, 6.15, 2, 4, 4);
+		Equipable *eqItem2 = new NormalBow("Wheatley's Bow", 100, 4.25, 1, 10, 7);
+		Equipable *eqItem3 = new NormalArmor("Leather Armor", 50, 12.25, 10, 2);
+		Equipable *eqItem4 = new NormalSword("Axe", 75, 12.65, 5, 7, 6);
+		Equipable *eqItem5 = new NormalSword("Pick-axe", 55, 10.0, 1, 7, 5);
+		Equipable *eqItem6 = new NormalSword("Short Sword", 45, 6.0, 2, 6, 5);
+		Equipable *eqItem7 = new NormalArmor("Plate Mail", 105, 30.0, 17, 10);
+		
+		//(std::string name, int price, double weight, int nrUses, bool consumedOnPickUp, int healthAffected)
+		Consumable *cons1 = new Potion("Health Potion", 32, 0.5, 3, false, 7);
+		Consumable *cons2 = new Food("Bread");
+		Consumable *cons3 = new Food("Roasted Chicken");
+		Consumable *cons4 = new Food("Porkchop");
+		Consumable *cons5 = new Food("Apple");
+		Consumable *cons6 = new StrengthPotion("Purple potion", 500, 0.3, 1, true, 4);
+		Consumable *cons7 = new Food("Cheese");
+		Consumable *cons8 = new Potion("Health Potion", 32, 0.5, 3, false, 8);
+		
+		Item *miscItem1 = new Item("Arrows", "Projectile", 16, 1.5);
+		Item *miscItem2 = new Item("Dinner Plates", "Misc", 7, 0.5);
+		Item *miscItem3 = new Item("Forks", "Misc", 6, 0.25);
+		Item *miscItem4 = new Item("Book on writing Books", "Book", 9, 0.15);
+		Item *miscItem5 = new Item("Kitchen Key", "Key", 4, 0.10);
+		Item *miscItem6 = new Item("Treasure Room Key", "Key", 4, 0.10);
+		Item *miscItem7 = new Item("Teleport Crystal", "Crystal", 3, 0.10);
+		Item *miscItem8 = new Item("Staff", "Wood", 1, 0.15);
+		Item *miscItem9 = new Item("Blargh's Doll", "Doll", 2, 1.25);
+		Item *miscItem10 = new Item("Cell Key", "Key", 2, 1.05);
+		
+		env4->addMiscItem(miscItem4);
+		env5->addConsumable(cons3);
+		
+		env6->addMiscItem(miscItem5);
+		env6->addConsumable(cons5);
+		
+		env7->addConsumable(cons2);
+		env7->addConsumable(cons4);
+		env7->addMiscItem(miscItem2);
+		env7->addMiscItem(miscItem3);
+		env7->addEquipable(eqItem4);
+		
+		// Wheatley the Thief
+		// Human(bool controllable, std::string name, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Environment* room)
+		Character *character = new Human(true,"Wheatley the Thief", 6, 10, 10, 1, 1, 0, 75, env1);
+		character->addInvEquipable(eqItem1);
+		character->addInvEquipable(eqItem2);
+		character->addInvEquipable(eqItem3);
+		character->equip(eqItem1->getName());
+		character->equip(eqItem3->getName());
+		character->addInvConsumable(cons1);
+		character->addInvMiscItem(miscItem1);
+		
+		// Ben the Scholar
+		// (bool controllable, std::string name, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Environment* room)
+		Scholar * scholar = new Scholar(false,"Ben the Scholar", 3, 5, 5, 2, 2, 0, 10, env3);
+		
+		scholar->addInvConsumable(cons6);
+		scholar->addInvMiscItem(miscItem8);
+		scholar->addThingToSay("Hello there.");
+		scholar->addThingToSay("Have you seen my green friend?");
+		scholar->addThingToSay("...I wonder where he have gone...");
+		scholar->addThingToSay("Mumble,mumble..");
+		scholar->addThingToSay("Hmm, maybe he is in there? No, no.. I already checked that room..");
+		scholar->addThingToSay("I could have sworn that I saw him inside the library room, now where is he?");
+		scholar->setAIBehavior(AI_BEHAVIOR::PACIFIST);
+		scholar->setSearchedObject("Blargh the Green Assistant");
+		scholar->setRewardObject("Purple potion");
+		
+		// Kapla the Guard
+		character = new Human(false,"Kapla", 10, 2, 3, 3, 2, 0, 60, env10);
+		character->addInvEquipable(eqItem6);
+		character->equip(eqItem6->getName());
+		character->addInvEquipable(eqItem7);
+		character->equip(eqItem7->getName());
+		character->addInvMiscItem(miscItem10);
+		character->addInvConsumable(cons8);
+		character->setCurrentHealth(character->getMaxHealth());
+		character->addThingToSay("Villain!");
+		character->addThingToSay("This is a restricted area, leave!");
+		character->addThingToSay("Leave this place!");
+		character->setAIBehavior(AI_BEHAVIOR::GUARD);
+
+		string goblinNames[] = {"Borka", "Bikow", "Blurgh", "Borgh", "Bl-a", "Biargh", "Bok-bok", "Blargho", "Blargh-blargh", "Sven"};
+		// Generate goblin slaves
+		for(int i = 0; i < 10; i++)
+		{
+			character = new Goblin(false,goblinNames[i], 2, 3, 5, 1, 2, 0, 10, env11);
+			character->addThingToSay(goblinNames[i]+"?");
+			character->addThingToSay(goblinNames[i]+"!");
+			character->addThingToSay(goblinNames[i]+".");
+			character->addThingToSay("Blargh, blurgh.");
+			character->addThingToSay("Blargh...blargh?");
+			character->setAIBehavior(AI_BEHAVIOR::PACIFIST);
+		}
+		
+		// Blargh the Green Assistant
+		character = new Goblin(false,"Blargh the Green Assistant", 2, 3, 5, 1, 2, 0, 10, env4);
+		
+		character->addInvConsumable(cons7);
+		character->addInvMiscItem(miscItem9);
+		character->addThingToSay("Blargh?");
+		character->addThingToSay("Blargh!");
+		character->addThingToSay("Blargh.");
+		character->addThingToSay("Blargh, blurgh.");
+		character->addThingToSay("Blurgh, blargh.");
+		character->addThingToSay("Blargh...blargh?");
+		character->addThingToSay("?");
+		character->addThingToSay("Blargh?!");
+		character->addThingToSay("...Quite marvelous theory actually, one might believe that...ehm, I mean..BLARGH!");
+		character->setAIBehavior(AI_BEHAVIOR::STAND_STILL);
+		
+		// Bok
+		Golem * golem = new Golem(false, "Bok", 15, 20, 20, 5,7, 0, 100, env4);
+		
+		golem->addInvMiscItem(miscItem7);
+		golem->addThingToSay("...");
+
+		// Dagonia
+		Dragon * dragon = new Dragon(false, "Dagonia", 25, 30, 30, 10, 15, 0, 200, env5);
+
+		dragon->setCurrFire(0);
+		dragon->setFireGen(1);
+		dragon->setFireCapacity(10);
+
+		dragon->addThingToSay("You dare to enter my lair?");
+		dragon->addThingToSay("Foolish mortal!");
+		dragon->addThingToSay("Toasters toast toast!");
+		dragon->addThingToSay("Let's burn!");
+		dragon->addThingToSay("Flame on!");
+		dragon->setAIBehavior(AI_BEHAVIOR::AGGRESSIVE_GUARD);
+
+		dragon->addInvMiscItem(miscItem6);
+		dragon->addInvEquipable(eqItem5);
+
+		environments_.push_back(env1);
+		environments_.push_back(env2);
+		environments_.push_back(env3);
+		environments_.push_back(env4);
+		environments_.push_back(env5);
+		environments_.push_back(env6);
+		environments_.push_back(env7);
+		environments_.push_back(env8);
+		environments_.push_back(env9);
+		environments_.push_back(env10);
+		environments_.push_back(env11);

@@ -2,19 +2,24 @@
 ///              diplays text to screen and updates world accordingly.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-07
+///	Version: 2013-12-09
 
 #include "GameEngine.h"
 #include "DungeonRoom.h"
 #include "AppleRoom.h"
+#include "GoalRoom.h"
 #include "Human.h"
+#include "Scholar.h"
 #include "Goblin.h"
+#include "Golem.h"
+#include "Dragon.h"
 #include "NormalSword.h"
 #include "Potion.h"
+#include "StrengthPotion.h"
 #include "Food.h"
 #include "SpikedBall.h"
 #include "NormalArmor.h"
-#include <iostream>
+#include "NormalBow.h"
 #include <fstream>
 #include <algorithm>
 
@@ -22,8 +27,9 @@
 #include <conio.h>
 #define NOMINMAX
 #include <Windows.h>
-#define USE_SOUND
+//#define USE_SOUND
 #else
+ #include <sys/ioctl.h>
  #include <unistd.h>   //_getch*/
  #include <termios.h>  //_getch*/
 #endif
@@ -64,6 +70,12 @@ namespace GameLogic
 	}
 #endif
 
+	// Game scenario relevant variables
+	string intro; // Shown on beginning of a new game
+	string outro; // Shown on the end of a game (i.e when winning)
+	bool newGame;
+	bool wonGame;
+
 	// Used for when pausing / resuming the game
 	Environment * roomAt;
 	Character * charAt;
@@ -103,6 +115,14 @@ namespace GameLogic
 		actions_.insert(std::pair<string, ACT_PTR>("USE", &Character::consume));
 	}
 
+	// Shows a message to user and holds continuation of program until enter is pressed.
+	void GameEngine::pressEnterToContinue()
+	{
+		cout << "\nPress enter to continue . . . ";
+		cin.sync();
+		cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	}
+	
 	// Parses input string from player console.
 	void GameEngine::processPlayerTurn(Character& character)
 	{
@@ -112,6 +132,7 @@ namespace GameLogic
 		bool turnIsOver = false;
 		while(!turnIsOver)
 		{
+			if(wonGame) return;
 			ss.str("");
 			ss.clear();
 			cout << "\n>";
@@ -294,13 +315,6 @@ namespace GameLogic
 		cout << string( 100, '\n' );
 	}
 
-	// Returns true if this game has reached an end.
-	bool GameEngine::gameOver() const
-	{
-		// TODO: GameOver
-		return false;
-	}
-
 	// Loads a saved game state from file.
 	bool GameEngine::loadGame(std::string file)
 	{
@@ -380,7 +394,7 @@ namespace GameLogic
 							std::getline(saveFile, line);
 							readLine = line.substr(0, line.find("#", 0));
 							readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
-							bool consumedOnPickup = static_cast <bool> (std::atoi(readLine.c_str()));
+							bool consumedOnPickup = std::atoi(readLine.c_str()) != 0;
 						
 							// Food
 							if(consType == "Food")
@@ -402,6 +416,17 @@ namespace GameLogic
 								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
 								int healthAffected = std::atoi(readLine.c_str());
 								Consumable * potion = new Potion(consName, consType, consPrice, consWeight, consNrUses, consumedOnPickup, healthAffected,consId);
+								consumables.insert(std::pair<int,Consumable*>(consId, potion));
+							}
+							// Strength Potion
+							else if(consType == "Strength Potion")
+							{
+								// READ STRENGTH AFFECTED
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								int strengthAffected = std::atoi(readLine.c_str());
+								StrengthPotion * potion = new StrengthPotion(consName, consType, consPrice, consWeight, consNrUses, consumedOnPickup, strengthAffected,consId);
 								consumables.insert(std::pair<int,Consumable*>(consId, potion));
 							}
 							// Spiked Ball
@@ -509,7 +534,7 @@ namespace GameLogic
 							std::getline(saveFile, line);
 							readLine = line.substr(0, line.find("#", 0));
 							readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
-							bool equipped = static_cast <bool> (std::atoi(readLine.c_str()));
+							bool equipped = std::atoi(readLine.c_str()) != 0;
 							
 							// READ REQ. DESC
 							std::getline(saveFile, line);
@@ -561,6 +586,31 @@ namespace GameLogic
 								
 								equipables.insert(std::pair<string,Equipable*>(consName, weapon));
 							}
+							// Normal Bow
+							else if(consType == "Normal Bow")
+							{
+								// MIN DMG
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								int minDMG = std::atoi(readLine.c_str());
+								
+								// MAX DMG
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								int maxDMG = std::atoi(readLine.c_str());
+								
+								// STRENGTH REQ
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								int strengthReq = std::atoi(readLine.c_str());
+								Equipable * weapon = new NormalBow(consName, consType, consPrice, consWeight, equipped, minDMG, maxDMG, strengthReq,consId);
+								weapon->setRequirementDesc(reqDesc);
+								
+								equipables.insert(std::pair<string,Equipable*>(consName, weapon));
+							}
 							cerr << "EQUIPABLE " << consName << " ADDED" << endl;
 							nrToProcess--;
 							ITEM_ID++;
@@ -598,6 +648,7 @@ namespace GameLogic
 
 							pos = 0;
 							// Find all equipables
+							cerr << "Going to find room equipables" << endl;
 							while ((pos = readLine.find(delimiter)) != string::npos) {
 								equipableString.push_back(readLine.substr(0, pos));
 								readLine.erase(0, pos + delimiter.length());
@@ -618,6 +669,7 @@ namespace GameLogic
 							std::vector<int> miscItemsInts;
 
 							pos = 0;
+							cerr << "Going to find room misc items" << endl;
 							// Find all misc items
 							while ((pos = readLine.find(delimiter)) != std::string::npos) {
 								miscItemsInts.push_back(std::atoi(readLine.substr(0, pos).c_str()));
@@ -632,7 +684,6 @@ namespace GameLogic
 								}
 							}
 							
-
 							// READ CONSUMABLES
 							std::getline(saveFile, line);
 							readLine = line.substr(0, line.find("#", 0));
@@ -640,9 +691,11 @@ namespace GameLogic
 							std::vector<int> consumableInts;
 
 							pos = 0;
+							cerr << "Going to find room consumables" << endl;
 							// Find all CONSUMABLES
 							while ((pos = readLine.find(delimiter)) != std::string::npos) {
 								consumableInts.push_back(std::atoi(readLine.substr(0, pos).c_str()));
+								readLine.erase(0, pos + delimiter.length());
 							}
 							
 							if(readLine.find(delimiter) == string::npos)
@@ -682,7 +735,7 @@ namespace GameLogic
 								}
 								environments_.push_back(appleRoom);
 							}
-							// Normal Weapon
+							// Dungeon Room
 							else if(type == "Dungeon Room")
 							{
 								Environment * dungeonRoom = new DungeonRoom(desc);
@@ -704,6 +757,30 @@ namespace GameLogic
 									dungeonRoom->addEquipable(equipables.find(item)->second);
 								}
 								environments_.push_back(dungeonRoom);
+								
+							}
+							// Goal Room
+							else if(type == "Goal Room")
+							{
+								Environment * goalRoom = new GoalRoom(desc);
+								goalRoom->setRoomRequirement(roomReq);
+								
+								// Add consumables
+								for(int item : consumableInts)
+								{	
+									goalRoom->addConsumable(consumables.find(item)->second);
+								}
+								// Add misc items
+								for(int item : miscItemsInts)
+								{	
+									goalRoom->addMiscItem(miscItems.find(item)->second);
+								}
+								// Add equipables
+								for(string item : equipableString)
+								{	
+									goalRoom->addEquipable(equipables.find(item)->second);
+								}
+								environments_.push_back(goalRoom);
 							}
 							cerr << "ROOM " << type << " ADDED" << endl;
 							nrToProcess--;
@@ -745,8 +822,8 @@ namespace GameLogic
 							// Process and add each exit to room
 							for(string exit : exits)
 							{
-								string dir   = readLine.substr(0, readLine.find(delimiter)); // String direction
-								int neighbor = std::atoi(readLine.substr(readLine.find(delimiter)+1, string::npos).c_str()); // String room
+								string dir   = exit.substr(0, exit.find(delimiter)); // String direction
+								int neighbor = std::atoi(exit.substr(exit.find(delimiter)+1, string::npos).c_str()); // String room
 								environments_[roomI]->addNeigbor(environments_[neighbor],dir);
 							}
 							nrToProcess--;
@@ -868,19 +945,19 @@ namespace GameLogic
 							std::getline(saveFile, line);
 							readLine = line.substr(0, line.find("#", 0));
 							readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
-							bool canPerformAction = static_cast <bool> (std::atoi(readLine.c_str()));
+							bool canPerformAction = std::atoi(readLine.c_str()) != 0;
 							
 							// CONTROLLABLE
 							std::getline(saveFile, line);
 							readLine = line.substr(0, line.find("#", 0));
 							readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
-							bool controllable = static_cast <bool> (std::atoi(readLine.c_str()));
+							bool controllable = std::atoi(readLine.c_str()) != 0;
 							
 							// AT NEW ROOM
 							std::getline(saveFile, line);
 							readLine = line.substr(0, line.find("#", 0));
 							readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
-							bool atNewRoom = static_cast <bool> (std::atoi(readLine.c_str()));
+							bool atNewRoom = std::atoi(readLine.c_str()) != 0;
 							
 							// AI BEHAVIOR (IF NPC)
 							std::getline(saveFile, line);
@@ -918,9 +995,10 @@ namespace GameLogic
 							std::vector<int> consumableInts;
 
 							pos = 0;
-							// Find all misc items
+							// Find all consumables
 							while ((pos = readLine.find(delimiter)) != std::string::npos) {
 								consumableInts.push_back(std::atoi(readLine.substr(0, pos).c_str()));
+								readLine.erase(0, pos + delimiter.length());
 							}
 							
 							if(readLine.find(delimiter) == string::npos)
@@ -1004,10 +1082,82 @@ namespace GameLogic
 									human->addThingToSay(sentence);
 								}
 								
+								human->setAtNewRoom(atNewRoom); // Make sure to preserve setAtNewRoom (can be altered when adding character to a room)
 								human->setCurrentCarried(currCarried); //Make sure to preserve currCarried (might have been altered by some "spell"
 								human->setMaxCarried(maxCarried); //Make sure to preserve maxCarried (might have been altered by some "spell"
 								human->setAIBehavior(aiBehavior);
 								characters.insert(std::pair<string,Character*>(name, human));
+							}
+							// SCHOLAR
+							else if(type == "Scholar")
+							{
+								// SEARCHED OBJECT
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								string searchedObj = readLine;
+								
+								// REWARD OBJECT
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								string rewardObj = readLine;
+								
+								// Armor
+								Equipable * currArmor;
+								auto it = equipables.find(equippedArmor);
+								if(it == equipables.end()) 
+								{
+									currArmor = nullptr; 
+								}
+								else
+								{
+									currArmor = it->second;
+								}
+								
+								// Weapon
+								Equipable * currWeapon;
+								it = equipables.find(equippedWeapon);
+								if(it == equipables.end()) 
+								{
+									currWeapon = nullptr; 
+								}
+								else
+								{
+									currWeapon = it->second;
+								}
+
+								Scholar * scholar = new Scholar(controllable, name, type, weight, strength, currHP, maxHP, minDMG, maxDMG, currCarried, maxCarried, currArmor, currWeapon, canPerformAction, atNewRoom, environments_[currRoom]);
+
+								// Add consumables
+								for(int item : consumableInts)
+								{	
+									scholar->addInvConsumable(consumables.find(item)->second);
+								}
+								// Add misc items
+								for(int item : miscItemsInts)
+								{	
+									scholar->addInvMiscItem(miscItems.find(item)->second);
+								}
+								// Add equipables
+								for(string item : equipableString)
+								{	
+									scholar->addInvEquipable(equipables.find(item)->second);
+								}
+								// Add things to say
+								for(string sentence : thingsToSay)
+								{	
+									scholar->addThingToSay(sentence);
+								}
+								
+								scholar->setSearchedObject(searchedObj);
+								scholar->setRewardObject(rewardObj);
+								
+								scholar->setAtNewRoom(atNewRoom); // Make sure to preserve setAtNewRoom (can be altered when adding character to a room)
+								scholar->setCurrentCarried(currCarried); //Make sure to preserve currCarried (might have been altered by some "spell"
+								scholar->setMaxCarried(maxCarried); //Make sure to preserve maxCarried (might have been altered by some "spell"
+								scholar->setAIBehavior(aiBehavior);
+								characters.insert(std::pair<string,Character*>(name, scholar));
 							}
 							// GOBLIN
 							else if(type == "Goblin")
@@ -1038,7 +1188,6 @@ namespace GameLogic
 
 								Character * goblin = new Goblin(controllable, name, type, weight, strength, currHP, maxHP, minDMG, maxDMG, currCarried, maxCarried, currArmor, currWeapon, canPerformAction, atNewRoom, environments_[currRoom]);
 
-								
 								// Add consumables
 								for(int item : consumableInts)
 								{	
@@ -1059,10 +1208,153 @@ namespace GameLogic
 								{	
 									goblin->addThingToSay(sentence);
 								}
+								goblin->setAtNewRoom(atNewRoom); // Make sure to preserve setAtNewRoom (can be altered when adding character to a room)
 								goblin->setCurrentCarried(currCarried); //Make sure to preserve currCarried (might have been altered by some "spell"
 								goblin->setMaxCarried(maxCarried); //Make sure to preserve maxCarried (might have been altered by some "spell"
 								goblin->setAIBehavior(aiBehavior);
 								characters.insert(std::pair<string,Character*>(name, goblin));
+							}
+							// GOLEM
+							else if(type == "Golem")
+							{
+								// TARGET
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								string target = readLine;
+								
+								// Armor
+								Equipable * currArmor;
+								auto it = equipables.find(equippedArmor);
+								if(it == equipables.end()) 
+								{
+									currArmor = nullptr; 
+								}
+								else
+								{
+									currArmor = it->second;
+								}
+								
+								// Weapon
+								Equipable * currWeapon;
+								it = equipables.find(equippedWeapon);
+								if(it == equipables.end()) 
+								{
+									currWeapon = nullptr; 
+								}
+								else
+								{
+									currWeapon = it->second;
+								}
+
+								Golem * golem = new Golem(controllable, name, type, weight, strength, currHP, maxHP, minDMG, maxDMG, currCarried, maxCarried, currArmor, currWeapon, canPerformAction, atNewRoom, environments_[currRoom]);
+
+								// Add consumables
+								for(int item : consumableInts)
+								{	
+									golem->addInvConsumable(consumables.find(item)->second);
+								}
+								// Add misc items
+								for(int item : miscItemsInts)
+								{	
+									golem->addInvMiscItem(miscItems.find(item)->second);
+								}
+								// Add equipables
+								for(string item : equipableString)
+								{	
+									golem->addInvEquipable(equipables.find(item)->second);
+								}
+								// Add things to say
+								for(string sentence : thingsToSay)
+								{	
+									golem->addThingToSay(sentence);
+								}
+								
+								golem->setTarget(target);
+								
+								golem->setAtNewRoom(atNewRoom); // Make sure to preserve setAtNewRoom (can be altered when adding character to a room)
+								golem->setCurrentCarried(currCarried); //Make sure to preserve currCarried (might have been altered by some "spell"
+								golem->setMaxCarried(maxCarried); //Make sure to preserve maxCarried (might have been altered by some "spell"
+								golem->setAIBehavior(aiBehavior);
+								characters.insert(std::pair<string,Character*>(name, golem));
+							}
+							// DRAGON
+							else if(type == "Dragon")
+							{
+								// CURR FIRE
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								int currFire = std::atoi(readLine.c_str());
+
+								// FIRE CAP.
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								int fireCap = std::atoi(readLine.c_str());
+								
+								// FIRE GEN.
+								std::getline(saveFile, line);
+								readLine = line.substr(0, line.find("#", 0));
+								readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+								int fireGen = std::atoi(readLine.c_str());
+
+								// Armor
+								Equipable * currArmor;
+								auto it = equipables.find(equippedArmor);
+								if(it == equipables.end()) 
+								{
+									currArmor = nullptr; 
+								}
+								else
+								{
+									currArmor = it->second;
+								}
+								
+								// Weapon
+								Equipable * currWeapon;
+								it = equipables.find(equippedWeapon);
+								if(it == equipables.end()) 
+								{
+									currWeapon = nullptr; 
+								}
+								else
+								{
+									currWeapon = it->second;
+								}
+
+								Dragon * dragon = new Dragon(controllable, name, type, weight, strength, currHP, maxHP, minDMG, maxDMG, currCarried, maxCarried, currArmor, currWeapon, canPerformAction, atNewRoom, environments_[currRoom]);
+
+								// Add consumables
+								for(int item : consumableInts)
+								{	
+									dragon->addInvConsumable(consumables.find(item)->second);
+								}
+								// Add misc items
+								for(int item : miscItemsInts)
+								{	
+									dragon->addInvMiscItem(miscItems.find(item)->second);
+								}
+								// Add equipables
+								for(string item : equipableString)
+								{	
+									dragon->addInvEquipable(equipables.find(item)->second);
+								}
+								// Add things to say
+								for(string sentence : thingsToSay)
+								{	
+									dragon->addThingToSay(sentence);
+								}
+								
+								dragon->setCurrFire(currFire);
+								dragon->setFireCapacity(fireCap);
+								dragon->setFireGen(fireGen);
+								
+								dragon->setAtNewRoom(atNewRoom); // Make sure to preserve setAtNewRoom (can be altered when adding character to a room)
+								dragon->setCurrentCarried(currCarried); //Make sure to preserve currCarried (might have been altered by some "spell"
+								dragon->setMaxCarried(maxCarried); //Make sure to preserve maxCarried (might have been altered by some "spell"
+								dragon->setAIBehavior(aiBehavior);
+								characters.insert(std::pair<string,Character*>(name, dragon));
 							}
 							std::cerr << "CHARACTER " << name << " ADDED " << endl;
 							nrToProcess--;
@@ -1150,6 +1442,48 @@ namespace GameLogic
 							charAt = it->second;
 							roomAt = it->second->getCurrentRoom();
 							
+							cerr << "CHAR AT " << charAt->getName() << (charAt) << endl;
+							cerr << "ROOM AT " << roomAt->getType() << (roomAt) << endl;
+							nrToProcess--;
+						}
+						break;
+					}
+					// FIND INTRO TEXT (ONLY SHOWN ON NEW GAME)
+					case(8):
+					{
+						// Should be one - but for sake of continuity have same format as the others
+						while(nrToProcess > 0)
+						{
+							// READ INTRO
+							std::getline(saveFile, line);
+							string readLine = line.substr(0, line.find("#", 0));
+							readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+						
+							if(readLine == "") continue;
+
+							intro = readLine;
+							
+							cerr << "INTRO TEXT LOADED " << endl;
+							nrToProcess--;
+						}
+						break;
+					}
+					// FIND OUTRO TEXT (ONLY SHOWN ON WINNING GAME)
+					case(9):
+					{
+						// Should be one - but for sake of continuity have same format as the others
+						while(nrToProcess > 0)
+						{
+							// READ OUTRO
+							std::getline(saveFile, line);
+							string readLine = line.substr(0, line.find("#", 0));
+							readLine.erase(remove(readLine.begin(),readLine.end(),'\t'),readLine.end());  // Trim tabs
+						
+							if(readLine == "") continue;
+
+							outro = readLine;
+							
+							cerr << "OUTRO TEXT LOADED " << endl;
 							nrToProcess--;
 						}
 						break;
@@ -1167,7 +1501,7 @@ namespace GameLogic
 			return true;
 		} else
 		{
-			std::cerr << "Could not open file.";
+			std::cerr << "Could not open file." << endl;;
 		}
 		return false;
 	}
@@ -1180,6 +1514,13 @@ namespace GameLogic
 		ss.str("");
 		ss.clear();
 		saveFile.open(file);
+		
+		// Make sure file is open
+		if(!saveFile.is_open())
+		{
+			return false;
+		}
+		
 		int totalCons = 0;
 		// WRITE CONSUMABLES
 		saveFile << "# READ CONSUMABLES" << endl;
@@ -1191,21 +1532,6 @@ namespace GameLogic
 			{
 				totalCons++;
 				ss << it->second->printItem() << endl;
-				//ss << it->second->getName() << endl;
-				//ss << it->second->getId() << endl;
-				//ss << it->second->getType() << endl;
-				//ss << it->second->getPrice() << endl;
-				//ss << it->second->getWeight() << endl;
-				//ss << it->second->getNrUses() << endl;
-				//if(it->second->isConsumedOnPickup())
-				//	ss << "1" << endl;
-				//else
-				//	ss << "0" << endl;
-				//string type = it->second->getType();
-				//if(type == "Potion" || type == "SpikedBall" || type == "Apple")
-				//{
-				//	ss << it->second->getHealthAffected() << endl;
-				//}
 			}
 			for(auto itC = c.begin(); itC != c.end(); itC++) 
 			{
@@ -1214,22 +1540,6 @@ namespace GameLogic
 				{
 					totalCons++;
 					ss << it->second->printItem() << endl;
-					//ss << it->second->getName() << endl;
-					//ss << it->second->getId() << endl;
-					//ss << it->second->getType() << endl;
-					//ss << it->second->getPrice() << endl;
-					//ss << it->second->getWeight() << endl;
-					//ss << it->second->getNrUses() << endl;
-					//if(it->second->isConsumedOnPickup())
-					//	ss << "1" << endl;
-					//else
-					//	ss << "0" << endl;
-					//string type = it->second->getType();
-					//if(type == "Potion" || type == "SpikedBall" || type == "Apple")
-					//{
-					//	ss << it->second->getHealthAffected() << endl;
-					//}
-					//ss << endl;
 				}
 				auto invChars = itC->second->getCharacters();
 				for(auto itinv  = invChars.begin(); itinv != invChars.end(); itinv++)
@@ -1239,26 +1549,9 @@ namespace GameLogic
 					{
 						totalCons++;
 						ss << itinvc->second->printItem() << endl;
-						//ss << itinvc->second->getName() << endl;
-						//ss << itinvc->second->getId() << endl;
-						//ss << itinvc->second->getType() << endl;
-						//ss << itinvc->second->getPrice() << endl;
-						//ss << itinvc->second->getWeight() << endl;
-						//ss << itinvc->second->getNrUses() << endl;
-						//if(itinvc->second->isConsumedOnPickup())
-						//	ss << "1" << endl;
-						//else
-						//	ss << "0" << endl;
-						//string type = itinvc->second->getType();
-						//if(type == "Potion" || type == "SpikedBall" || type == "Apple")
-						//{
-						//	ss << itinvc->second->getHealthAffected() << endl;
-						//}
-						//ss << endl;
 					}
 				}
 			}
-			
 		}
 
 		saveFile << totalCons << endl << endl;
@@ -1278,12 +1571,6 @@ namespace GameLogic
 			{
 				totalMiscItems++;
 				ss << it->second->printItem() << endl;
-				//ss << it->second->getName() << endl;
-				//ss << it->second->getId() << endl;
-				//ss << it->second->getType() << endl;
-				//ss << it->second->getPrice() << endl;
-				//ss << it->second->getWeight() << endl;
-				//ss << endl;
 			}
 			
 			for(auto itC = c.begin(); itC != c.end(); itC++) 
@@ -1293,12 +1580,6 @@ namespace GameLogic
 				{
 					totalMiscItems++;
 					ss << it->second->printItem() << endl;
-					//ss << it->second->getName() << endl;
-					//ss << it->second->getId() << endl;
-					//ss << it->second->getType() << endl;
-					//ss << it->second->getPrice() << endl;
-					//ss << it->second->getWeight() << endl;
-					//ss << endl;
 				}
 
 				auto invChars = itC->second->getCharacters();
@@ -1309,12 +1590,6 @@ namespace GameLogic
 					{
 						totalMiscItems++;
 						ss << itinvc->second->printItem() << endl;
-						//ss << itinvc->second->getName() << endl;
-						//ss << itinvc->second->getId() << endl;
-						//ss << itinvc->second->getType() << endl;
-						//ss << itinvc->second->getPrice() << endl;
-						//ss << itinvc->second->getWeight() << endl;
-						//ss << endl;
 					}
 				}
 			}
@@ -1337,37 +1612,15 @@ namespace GameLogic
 			{
 				totalEqs++;
 				ss << it->second->printItem() << endl;
-				//ss << it->second->getName() << endl;
-				//ss << it->second->getId() << endl;
-				//ss << it->second->getType() << endl;
-				//ss << it->second->getPrice() << endl;
-				//ss << it->second->getWeight() << endl;
-				//if(it->second->isEquipped())
-				//	ss << "1" << endl;
-				//else
-				//	ss << "0" << endl;
-				//ss << endl;
-
 			}
 			
 			for(auto itC = c.begin(); itC != c.end(); itC++) 
 			{
-				//cout << itC->second->getName();
 				auto charEquipables = itC->second->getEquipables();
 				for(auto it = charEquipables.begin(); it != charEquipables.end(); it++)
 				{
 					totalEqs++;
 					ss << it->second->printItem() << endl;
-					//ss << it->second->getName() << endl;
-					//ss << it->second->getId() << endl;
-					//ss << it->second->getType() << endl;
-					//ss << it->second->getPrice() << endl;
-					//ss << it->second->getWeight() << endl;
-					//if(it->second->isEquipped())
-					//	ss << "1" << endl;
-					//else
-					//	ss << "0" << endl;
-					//ss << endl;
 				}
 
 				auto invChars = itC->second->getCharacters();
@@ -1378,16 +1631,6 @@ namespace GameLogic
 					{
 						totalEqs++;
 						ss << itinvc->second->printItem() << endl;
-						//ss << itinvc->second->getName() << endl;
-						//ss << itinvc->second->getId() << endl;
-						//ss << itinvc->second->getType() << endl;
-						//ss << itinvc->second->getPrice() << endl;
-						//ss << itinvc->second->getWeight() << endl;
-						//if(itinvc->second->isEquipped())
-						//	ss << "1" << endl;
-						//else
-						//	ss << "0" << endl;
-						//ss << endl;
 					}
 				}
 			}
@@ -1406,41 +1649,6 @@ namespace GameLogic
 		{
 			totalRooms++;
 			ss << room->printEnvironment() << endl;
-			//ss << room->getType() << endl;
-			//ss << room->getShortDescription() << endl;
-			//auto roomEqs = room->getEquipables();
-			
-			//string line = "";
-			//for(auto it = roomEqs.begin(); it != roomEqs.end(); it++)
-			//{
-			//	line = it->second->getName() + ",";
-			//}
-			//line = line.substr(0, line.size()-1);
-			//ss << line.c_str();
-			//ss << endl;
-
-			//auto roomMisc = room->getMiscItems();
-			//line = "";
-			//for(auto it = roomMisc.begin(); it != roomMisc.end(); it++)
-			//{
-			//	int id = it->second->getId();
-			//	line += std::to_string(id) + ",";
-			//}
-			//line = line.substr(0, line.size()-1);
-			//ss << line.c_str();
-			//ss << endl;
-
-			//line = "";
-			//auto roomCons = room->getConsumables();
-			//for(auto it = roomCons.begin(); it != roomCons.end(); it++)
-			//{
-			//	int id = it->second->getId();
-			//	line += std::to_string(id) + ",";
-			//}
-			//line = line.substr(0, line.size()-1);
-			//ss << line.c_str();
-			//ss << endl << endl;
-
 		}
 
 		saveFile << totalRooms << endl << endl;
@@ -1456,13 +1664,15 @@ namespace GameLogic
 		{
 			totalRoomsExits++;
 			auto exits = room->getExits();
+			bool first = true;
 			for(auto it = exits.begin(); it != exits.end(); it++)
 			{
+				if(!first) ss << ";";
 				ss << it->first << ",";
-				string i = std::to_string(totalRoomsExits);
-				ss << i.c_str() << endl;
+				ss << getIndexRoom(it->second);
+				first = false;
 			}
-			ss << endl;
+			ss << endl << endl;
 		}
 
 		saveFile << totalRoomsExits << endl << endl;
@@ -1470,6 +1680,7 @@ namespace GameLogic
 		ss.str("");
 		ss.clear();
 		
+		// WRITE CHARACTERS
 		saveFile << "# READ CHARACTERS" << endl;
 		int totalCharacters = 0;
 
@@ -1480,74 +1691,201 @@ namespace GameLogic
 			// Each character
 			for(auto it = c.begin(); it != c.end(); it++)
 			{
-				totalCharacters++;
-				ss << it->second->printCharacter();
-				auto invChars = it->second->getCharacters()
-				
-				// Each inventory character
-				for(auto itinvc = invChars.begin(); itinvc != invChars.end(); itinvc++)
-				{
-					totalCharacters++;
-					ss << it->second->printCharacter();
-					// <- RECURSIVE CALL HERE
-				}
-				
+				printInvCharacters(*(it->second), ss, totalCharacters);
 			}
 		}
 
+		saveFile << totalCharacters << endl << endl;
+		saveFile << ss.str() << endl;
+		ss.str("");
+		ss.clear();
+		
+		// WRITE CHARACTERS IN INV
+		saveFile << "# READ CHARACTERS IN INVENTORY" << endl;
+		totalCharacters = 0;
+		
+		// Go through each room
+		for(Environment * room : environments_)
+		{
+			auto c = room->getCharacters();
+			// Each character
+			for(auto it = c.begin(); it != c.end(); it++)
+			{
+				printInvCharRel(*it->second, ss, totalCharacters);
+			}
+		}
+		
+		saveFile << totalCharacters << endl << endl;
+		saveFile << ss.str() << endl;
+		ss.str("");
+		ss.clear();
+		
+		// WRITE SAVED CAHRACTER AT
+		saveFile << "# READ WHICH CHARACTER WE SAVED AT" << endl;
+		saveFile << 1 << endl << endl; // For now this will be hardcoded (nr of characters saved at; makes sense to only save at one at a time)
+		
+		if(charAt == nullptr) 
+		{
+			cerr << "ERROR: Character at was not set when trying to save." << endl;
+			throw 1;
+		}
+		else
+		{
+			saveFile << charAt->getName() << endl;
+		}
+		saveFile << endl;
+		
+		// WRITE INTRO
+		saveFile << "# READ INTRO TEXT (ONLY SHOWN ON NEW GAME)" << endl;
+		saveFile << 1 << endl << endl; // For now this will be hardcoded (nr of intro; makes sense to be only one)
+		
+		ss << intro << endl;
+		saveFile << ss.str() << endl;
+		
+		ss.str("");
+		ss.clear();
+		
+		// WRITE OUTRO
+		saveFile << "# READ OUTRO TEXT (ONLY SHOW UPON WINNING THE GAME)" << endl;
+		saveFile << 1 << endl << endl; // For now this will be hardcoded (nr of outro; makes sense to be only one)
+		
+		ss << outro << endl;
+		saveFile << ss.str() << endl;
+		
+		ss.str("");
+		ss.clear();
 
 		saveFile.close();
 		return true;
+	}
+	
+	// Prints relations between characters (i.e. characters in inventory)
+	void GameEngine::printInvCharRel(Character& character, std::stringstream& ss, int& nrCharacters) const
+	{
+		nrCharacters++;
+		ss << character.getName() << endl;
+		
+		bool first = true;
+		auto invChars = character.getCharacters();
+		// Each inventory character
+		for(auto itinvc = invChars.begin(); itinvc != invChars.end(); itinvc++)
+		{
+			if(!first) ss << ";";
+			ss << itinvc->second->getName();
+			first = false;
+		}
+		ss << endl;
+		ss << endl;
+		
+		// Do recursive calls
+		for(auto itinvc = invChars.begin(); itinvc != invChars.end(); itinvc++)
+		{
+			printInvCharRel(*itinvc->second, ss, nrCharacters);
+		}
+	}
+	
+	// Prints character along with each character in its inventory
+	void GameEngine::printInvCharacters(Character& character, std::stringstream& ss, int& nrCharacters) const
+	{
+		nrCharacters++;
+		ss << getIndexRoom(character.getCurrentRoom()) << "\n" << character.printCharacter() << endl;
+		
+		auto invChars = character.getCharacters();
+		// Each inventory character
+		for(auto itinvc = invChars.begin(); itinvc != invChars.end(); itinvc++)
+		{
+			printInvCharacters(*itinvc->second, ss, nrCharacters);
+		}
+	}
+	
+	// Returns the index of room in environments_.
+	int GameEngine::getIndexRoom(Environment* env) const
+	{
+		auto it = std::find(environments_.begin(), environments_.end(), env);
+		if (it == environments_.end())
+		{
+			cerr << "ERROR: Character room does no long exist" << endl;
+		  throw -1;
+		  return -1;
+		} 
+		else
+		{
+		  return std::distance(environments_.begin(), it);
+		}
+	}
+	
+	// Returns the nr of characters (width) of console.
+	int GameEngine::GetConsoleBufferWidth()
+	{
+	#ifdef _WIN32
+		CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+		int bufferWidth, result;
+	 
+		result = GetConsoleScreenBufferInfo(GetStdHandle( STD_OUTPUT_HANDLE ),&bufferInfo);
+		if(result)
+		{
+			bufferWidth = bufferInfo.dwSize.X;
+		}
+		return bufferWidth;
+	#else
+		struct winsize w;
+		ioctl(0, TIOCGWINSZ, &w);
+		return w.ws_col;
+	#endif
+	}
+	
+	// Outputs formatted string (with newlines inserted after or before words) to std::cout
+	// Originally by: Alex Rodgers 
+	void GameEngine::FormattedOutput(string str)
+	{
+		int consoleWidth = GetConsoleBufferWidth();
+ 
+		for (unsigned int i = 1; i <= str.length() ; i++)
+		{
+			char c = str[i-1];
+	 
+			int spaceCount = 0;
+	 
+			// Add whitespace if newline detected.
+			if (c == '\n')
+			{
+				int charNumOnLine = ((i) % consoleWidth);
+				spaceCount = consoleWidth - charNumOnLine;
+				str.insert((i-1), (spaceCount), ' ');
+				i+=(spaceCount);
+				continue;
+			}
+	 
+			if ((i % consoleWidth) == 0)
+			{
+				if (c != ' ')
+				{
+					for (int j = (i-1); j > -1 ; j--)
+					{
+						if (str[j] == ' ')
+						{
+							str.insert(j, spaceCount, ' ');
+							break;
+						}
+						else spaceCount++;
+					}
+				}
+			}
+		}
+		cout << str;
+	}
+	
+	// You have won the game!
+	void GameEngine::winGame()
+	{
+		wonGame = true;
 	}
 		
 	// Start a new game, create all items and inhabit environments.
 	void GameEngine::startNewGame(std::string file)
 	{
-		// TODO : Start new game
-		cout << "This is not a game!" << endl;
-
-		Environment *env1 = new DungeonRoom("A very (very) dark room.");
-		Environment *env2 = new DungeonRoom("Another very dark room.");
-		Environment *env3 = new AppleRoom("A very predictable room.");
-		
-		Character *character = new Human(true,"Joe", "Human", 5, 1, 1, 1, 1, 0, 100, env2);
-		character = new Goblin(false,"Goe1", "Goblin", 5, 1, 1, 1, 1, 0, 10, env1);
-		character->addThingToSay("Blargh blargh blurb!");
-		character->setAIBehavior(AI_BEHAVIOR::PASSIVE_LOOTER);
-		character = new Goblin(false,"Bonk", "Goblin", 5, 10, 10, 1, 1, 0, 500, env1);
-		character->addThingToSay("Bonk!");
-		character->setAIBehavior(AI_BEHAVIOR::DO_NOT_HIT_ME);
-		character = new Goblin(false,"Goblin Scholar", "Goblin", 5, 1, 1, 1, 1, 0, 10, env2);
-		character->addThingToSay("Ah..ehm, blargh blurgh blab. Quite blargh indeed!");
-		character->addThingToSay("Mumble, mumble..");
-		character->addThingToSay("Fascinating..");
-		character->setAIBehavior(AI_BEHAVIOR::PACIFIST);
-
-		env1->addNeigbor(env2, "UP");
-		env2->addNeigbor(env1, "DOWN");
-		env1->addNeigbor(env3, "STAIRS");
-		env3->addNeigbor(env1, "STAIRS");
-		env3->setRoomRequirement("Golden Key;Silver Key");
-
-		Item *miscItem1 = new Item("Golden Key", "Key", 100, 1);
-		env1->addMiscItem(miscItem1);
-		Item *miscItem2 = new Item("Silver Key", "Key", 100, 1);
-		env2->addMiscItem(miscItem2);
-		Consumable *potion = new Potion("Magic Potion", 100, 0.5, 3, false, 5);
-		env2-> addConsumable(potion);
-		Consumable *ball = new SpikedBall("Spiked Ball", 10, 10.0, 1);
-		env1-> addConsumable(ball);
-		Equipable *eqItem1 = new NormalSword("Bastard Sword", 50, 5.25, 2, 5, 1);
-		Equipable *eqItem2 = new NormalSword("Heavy Sword", 50, 5.25, 2, 5, 10);
-		Equipable *eqItem3 = new NormalArmor("Good Amror", 75, 6.25, 25, 1);
-		Equipable *eqItem4 = new NormalArmor("Armor of Pain", 1, 10.25, -10, 1);
-		env1->addEquipable(eqItem1);
-		env1->addEquipable(eqItem2);
-		env2->addEquipable(eqItem3);
-		env2->addEquipable(eqItem4);
-		environments_.push_back(env1);
-		environments_.push_back(env2);
-		environments_.push_back(env3);
+		loadGame(file);
+		newGame = true;
 	}
 
 	// Deletes all objects associated with current game instance.
@@ -1588,7 +1926,6 @@ namespace GameLogic
 			{
 				menuChoice = -1;
 			}
-			
 
 			switch(menuChoice)
 			{
@@ -1611,43 +1948,45 @@ namespace GameLogic
 					cleanUpGame(); // We might have a game going on
 					clearScreen();
 					cout << endSeperatorLine;
-					startNewGame("file");
+					startNewGame("map01.map");
 					gameLoop();
 					break;
 				// Load game
 				case(2):
 					cleanUpGame(); // We might have a game going on
-					if(loadGame("save_file_template.file"))
+					if(loadGame("save_test.file"))
 					{
 						isPaused = true;
 						cout << "Game loaded." << endl;
 						cerr << "Player is: " << charAt << endl;
 						cerr << "Room in: " << roomAt << endl;
-						
-						cout << "\nPress enter to continue . . . ";
-						cin.sync();
-						cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+						pressEnterToContinue();
 					}
 					else
 					{
-						cout << "Error: There is no saved game by that name." << endl;
-						
-						cout << "\nPress enter to continue . . . ";
-						cin.sync();
-						cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+						cout << "Error: There is no saved game by that name." << endl;					
+						pressEnterToContinue();
 					}
 					break;
 				// Save game
 				case(3):
-					if(saveGame("save_test.file"))
+					if(isPaused)
 					{
-						cout << "Save successful!";
+						if(saveGame("save_test.file"))
+						{
+							cout << "Save successful!";
+							pressEnterToContinue();
+						}
+						else
+						{
+							cout << "There was an error when saving the game.";
+							pressEnterToContinue();
+						}
 					}
 					else
 					{
-						cout << "There was an error when saving the game.";
+						cout << "This is not a menu option." << endl;
 					}
-
 					break;
 				// Exit game
 				case(4):
@@ -1669,7 +2008,29 @@ namespace GameLogic
 
 		while(doGameLoop)
 		{
-			doGameLoop = newTurn();
+			if(newGame) 
+			{
+				clearScreen();
+				cout << endSeperatorLine;
+				FormattedOutput(intro);
+				cout << endl;
+				pressEnterToContinue();
+				newGame = false;
+			}
+			else if(wonGame)
+			{
+				clearScreen();
+				cout << endSeperatorLine;
+				FormattedOutput(outro);
+				cout << endl;
+				pressEnterToContinue();
+				wonGame = false;
+				doGameLoop = false;
+			}
+			else
+			{
+				doGameLoop = newTurn();
+			}
 		}
 		if(!isPaused)
 		{
@@ -1687,12 +2048,46 @@ namespace GameLogic
 		return updateRooms();
 	}
 
-	// Goes through each room, runs action for each Character in room.
-	bool GameEngine::updateRooms()
+	// Updates the non-player characters (their turn)
+	void GameEngine::updateNPC()
+	{
+		for(Environment * room : environments_)
+		{
+			auto characters = room->getCharacters(); // Not the most effective but it works...
+			for(auto it = characters.begin(); it != characters.end(); it++)
+			{
+				bool controllable = it->second->isControllable();
+				
+				if(!controllable)
+				{
+					// Check if character is alive
+					if(it->second->isAlive())
+					{
+						// Do not apply turn event when resuming game
+						room->turnEvent(*it->second);
+
+						if(it->second->getCanPerformAction())
+						{
+							it->second->setInNewRoom(false);
+							it->second->action();
+							it->second->setCanPerformAction(false);
+						}
+					}
+					// Remove Character from room and delete from memory
+					else
+					{
+						it->second->getCurrentRoom()->removeCharacter(it->second->getName());
+						delete it->second;
+					}
+				}
+			}
+		}
+	}
+	
+	// Updates the player characters (their turn)
+	bool GameEngine::updatePC(bool useStartValues)
 	{
 		bool thereIsAPlayer = false;
-		bool useStartValues = isPaused;
-		isPaused = false;
 		for(Environment * room : environments_)
 		{
 			if(useStartValues && room != roomAt) continue; // Resume at correct room
@@ -1702,32 +2097,30 @@ namespace GameLogic
 			{
 				if(useStartValues && charAt != it->second) continue; // Resume at correct character
 				bool controllable = it->second->isControllable();
-				// Check if character is alive
-				if(it->second->isAlive())
+				if(controllable)
 				{
-					auto lambdaFunc = [it]() 
+					// Check if character is alive
+					if(it->second->isAlive())
 					{
-						cout << endSeperatorLine;
-						cout << "\tIt is now " << it->second->getName() << "'s turn." << endl;
-						cout << endSeperatorLine;
-					};
-
-					// Do not apply turn event when resuming game
-					if(!useStartValues)
-					{
-						room->turnEvent(*it->second);
-						cerr << it->second->getName() << " C: " << it->second << " P: " << it->second->getCanPerformAction() << " R: " << it->second->getCurrentRoom() << endl;
-					}
-					if(controllable) thereIsAPlayer = true;
-
-					if(it->second->getCanPerformAction())
-					{
-						bool inNewRoom = it->second->getInNewRoom();
-						it->second->setInNewRoom(false);
-
-						// Controllable by user - parse input time
-						if(controllable)
+						auto lambdaFunc = [it]() 
 						{
+							cout << endSeperatorLine;
+							cout << "\tIt is now " << it->second->getName() << "'s turn." << endl;
+							cout << endSeperatorLine;
+						};
+
+						// Do not apply turn event when resuming game
+						if(!useStartValues)
+						{
+							room->turnEvent(*it->second);
+						}
+						thereIsAPlayer = true;
+
+						if(it->second->getCanPerformAction())
+						{
+							bool inNewRoom = it->second->getInNewRoom();
+							it->second->setInNewRoom(false);
+
 							if(!useStartValues)lambdaFunc();
 							// If at new room for the first time write 
 							if(inNewRoom || useStartValues)
@@ -1744,20 +2137,15 @@ namespace GameLogic
 								charAt = it->second;
 								return false;
 							}
+							it->second->setCanPerformAction(false);
 						}
-						// NPC - Generate random action
-						else
-						{
-							it->second->action();
-						}
-						it->second->setCanPerformAction(false);
 					}
-				}
-				// Remove Character from room and delete from memory
-				else
-				{
-					it->second->getCurrentRoom()->removeCharacter(it->second->getName());
-					delete it->second;
+					// Remove Character from room and delete from memory
+					else
+					{
+						it->second->getCurrentRoom()->removeCharacter(it->second->getName());
+						delete it->second;
+					}
 				}
 			}
 		}
@@ -1765,19 +2153,33 @@ namespace GameLogic
 		if(!thereIsAPlayer)
 		{
 			cout << whipeSkull << endl;
-			cout << "     The return of whipeskull!\nAll of your character were incapacitated.\n\t    GAME OVER" << endl;
-			cout << "\nPress enter to continue . . . ";
-			cin.sync();
-			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			cout << "     The return of Whipeskull!\nAll of your character were incapacitated.\n\t    GAME OVER" << endl;
+			#ifdef USE_SOUND
+						Beep(1000,300);
+						Beep(800, 300);
+						Beep(200, 1000);
+			#endif
+			pressEnterToContinue();
 			cout << endSeperatorLine;
 		}
-
+		
 		return thereIsAPlayer;
+	}
+	
+	// Goes through each room, runs action for each Character in room.
+	bool GameEngine::updateRooms()
+	{
+		bool useStartValues = isPaused;
+		isPaused = false;
+		
+		bool res = updatePC(useStartValues);  // Update player characters
+		if(res) updateNPC(); // Update NPC (only if there are players that are alive)
+		return res;
 	}
 
 	// Returns a string containing menu options, such as ability to save, load, start a new game or to exit.
 	string GameEngine::getMainMenu() const
 	{
-		return gameTitle + "\n\nMain Menu\n--------\n" + ((isPaused)?"0. Resume Game\n":"") + "1. Play Game \n2. Load Game \n3. Save Game \n4. Exit Game";
+		return gameTitle + "\n\nMain Menu\n--------\n" + ((isPaused)?"0. Resume Game\n":"") + "1. Play Game \n2. Load Game \n" + ((isPaused)?"3. Save Game ":"") + "\n4. Exit Game";
 	}
 }

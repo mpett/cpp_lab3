@@ -1,4 +1,4 @@
-/// Description: Header file for NormalSword, inherits from Equipable class.
+/// Description: Header file for Normal Bow, inherits from Equipable class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
 ///	Version: 2013-12-08
@@ -10,28 +10,28 @@ namespace GameLogic
 {
 	class Character; // Forward declaration solves circular dependancies
 
-	class NormalSword : public Equipable
+	class NormalBow : public Equipable
 	{
 	public:
-		// NormalSword constructor.
-		NormalSword(std::string name, int price, double weight, int minDamageIncr, int maxDamageIncr, int strengthReq) : Equipable(name, "Normal Sword", price, weight)
+		// NormalBow constructor.
+		NormalBow(std::string name, int price, double weight, int minDamageIncr, int maxDamageIncr, int strengthReq) : Equipable(name, "Normal Bow", price, weight)
 		{
 			minDamageIncr_ = minDamageIncr;
 			maxDamageIncr_ = maxDamageIncr;
 			strengthReq_ = strengthReq;
 			std::stringstream ss;
-			ss << "Character must have a strength of " << strengthReq_;
+			ss << "Character must have a strength of " << strengthReq_ << " and an arrow in inventory.";
 			requirementDesc_ =  ss.str();
 		}
 
-		// NormalSword constructor. (Used for loading)
-		NormalSword(std::string name, std::string type, int price, double weight, bool equipped, int minDamageIncr, int maxDamageIncr, int strengthReq, int id) : Equipable(name, type, price, weight, equipped, id)
+		// NormalBow constructor. (Used for loading)
+		NormalBow(std::string name, std::string type, int price, double weight, bool equipped, int minDamageIncr, int maxDamageIncr, int strengthReq, int id) : Equipable(name, type, price, weight, equipped, id)
 		{
 			minDamageIncr_ = minDamageIncr;
 			maxDamageIncr_ = maxDamageIncr;
 			strengthReq_ = strengthReq;
 			std::stringstream ss;
-			ss << "Character must have a strength of " << strengthReq_;
+			ss << "Character must have a strength of " << strengthReq_ << " and an arrow in inventory.";
 			requirementDesc_ =  ss.str();
 		}
 		

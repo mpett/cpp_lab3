@@ -15,7 +15,7 @@ namespace GameLogic
 	{
 	public:
 		// Destructor
-		~Goblin();
+		virtual ~Goblin();
 
 		 // Constructor for Goblin. Set every variable.
 		 Goblin(bool controllable, std::string name, std::string type, double weight, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Equipable * currentArmor, Equipable * currentWeapon, bool canPerformAction, bool atNewRoom, Environment* room)

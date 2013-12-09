@@ -1,0 +1,15 @@
+SCENARIO 1:
+
+Spelare går in i korridor. I korridoren står Ben. Spelare inleder en konversation med Ben. Ben svarar att han saknar sin gröne kompis. Spelare går norrut och därefter uppför en trappa. 
+
+Spelare ser sig omkring i rummet och ser en "goblin" vid namn Bob, ett "äpple" samt en utgång: dörr. Spelare försöker passera genom dörren, men får meddelandet att dörren är låst och att det krävs en "liten nyckel" för att fortsätta åt detta håll. Spelare slår till Bob. Bob skadas med 4 livspoäng. 
+
+Bob slår till Spelare med 11 skada. Spelare inspekterar sig själv (genom att skriva kommandod "me") och upptäcker att hon bara har 3 livspoäng kvar! Spelare plockar upp "äpple". Bob gör ingenting. Spelare äter upp äpplet och får tillbaka 4 livspoäng. Spelare slår till Bob. Bob dör och alla hans tillhörigheter sprids ut i rummer. 
+
+Spelare tittar sig om i rummet och ser en "liten nyckel", en "plåtrustning" samt ett "rostigt svärd". Spelare plockar upp alla saker. 
+
+Spelare låser upp dörren och går in i ett kök. Spelare ser sig om i köket och ser "Blarg, den gröne tjänaren". Spelare pratar med Blarg, som svarar "Blargh?". Spelare pratar en gång till med Blarg som nu utbrister "Blurbh, BLARGH!". 
+
+Spelare försöker plocka upp Blargh och lägga honom i sin kappsäck, men blir meddelad: "Du orkar inte bära mer just nu". Spelare inspekterar sin kappsäck (genom att skriva "inv" i kommandofönstret). Spelare ser att hon för närvarande bär 11 kg av 13 möjliga, men även att "plåtrustning" väger hela 7 kg! Spelare tar "plåtrustning" ur kappsäcken och lägger denna på golvet i köksrummet. Spelare plockar upp Blargh och lägger honom i sin kappsäck.
+
+Spelare tar samma väg tillbaka till Ben. Samtidigt som Spelare går in i korridoren utbrister Ben hur glad han är och släpper ett gyllene föremål på marken (som förmodligen kan vara till nytta någon gång i framtiden).

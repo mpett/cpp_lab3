@@ -2,7 +2,7 @@
 ///              They are typically uncontrollable (i.e. aggressive NPC).
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-06
+///	Version: 2013-12-09
 
 #include "Goblin.h"
 #include <iostream>

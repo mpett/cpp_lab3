@@ -3,7 +3,7 @@
 ///              It will typically have a description which will be displayed upon entering the room with a character controlled by the player.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-06
+///	Version: 2013-12-09
 
 #include <algorithm>
 #include "Environment.h"
@@ -74,12 +74,50 @@ namespace GameLogic
 		return item->first;
 	}
 
-	// Returns requirements for entering this room. 
+	// Returns requirements for all directions leaving this room. 
 	// Requirements are (at the moment) only item/Character names.
 	// Requirements are ; separated.
 	string Environment::roomRequirement() const
 	{
-		return roomRequirement_;
+		return directionRequirement_;
+	}
+
+	// Returns requirements for the direction from this room. 
+	// Requirements are (at the moment) only item/Character names.
+	string Environment::directionRequirement(string dir) const
+	{
+		std::transform(dir.begin(), dir.end(), dir.begin(), ::toupper); // To caps
+
+		string delimiter = ";";
+		size_t pos = 0;
+		string currReq;
+		string readLine = directionRequirement_;
+
+		// Find the direction
+		if ((pos = readLine.find(dir)) != std::string::npos) 
+		{
+			readLine.erase(0, pos);
+			// Next find direction delimiter
+			if((pos = readLine.find(delimiter)) != std::string::npos)
+			{
+				readLine.erase(pos, string::npos);
+			}
+				
+			delimiter = ",";
+			bool first = true;
+			// Now it is time to check requirements
+			while((pos = readLine.find(delimiter)) != std::string::npos)
+			{
+				// Remove direction from string, only interested in requirements
+				if(first) 
+				{
+					readLine.erase(0, pos + delimiter.length());
+					first = false;
+					break;
+				}
+			}
+		}
+		return readLine;
 	}
 
 	// Returns a string containing contents of the current environment, with characters, items and exits.
@@ -190,7 +228,7 @@ namespace GameLogic
 		}
 		ss << "\n";
 		
-		ss << roomRequirement_ << "\n";
+		ss << directionRequirement_ << "\n";
 		
 		return ss.str();
 	}
@@ -220,46 +258,79 @@ namespace GameLogic
 		return description_;
 	}
 
-	// Sets room requirement string of this room.
+	// Sets the direction requirement string (all directions requirements) of this room.
+	// E.g NORTH,key; SOUTH,ball
+	//     NORTH,key,ball,sword; SOUTH,ball
 	// Requirements are (at the moment) only item/Character names.
 	// Requirements are ; separated.
 	void Environment::setRoomRequirement(string requirement)
 	{
-		roomRequirement_ = requirement;
+		std::transform(requirement.begin(), requirement.end(),requirement.begin(), ::toupper); // To caps
+		directionRequirement_ = requirement;
 	}
 	
-	/// Checks if character has fulfilled the room requirement(s).
-	/// (i.e. if he/she has all of the items/characters listed)
-	bool Environment::checkRoomRequirement(Character &character)
+	/// Checks if character has fulfilled the direction requirement(s).
+		/// (i.e. if he/she has all of the items/characters listed)
+	bool Environment::checkDirectionRequirement(string dir, Character &character)
 	{
+		std::transform(dir.begin(), dir.end(),dir.begin(), ::toupper); // To caps
+		
 		string delimiter = ";";
 		size_t pos = 0;
 		string currReq;
-		string readLine = roomRequirement_;
-		// Find all requirements
-		while ((pos = readLine.find(delimiter)) != std::string::npos) 
+		string readLine = directionRequirement_;
+
+		bool reqFound = true;
+		
+		readLine.erase(remove(readLine.begin(),readLine.end(),' '),readLine.end());  // Trim whitespaces
+		// Find the direction
+		if ((pos = readLine.find(dir)) != std::string::npos) 
 		{
-			currReq = readLine.substr(0, pos);
-			// At least one item/character must match requirement
-			if(character.getInvMiscItem(currReq) == nullptr && character.getInvEquipable(currReq) == nullptr && character.getInvConsumable(currReq) == nullptr && character.getInvCharacter(currReq) == nullptr)
+			readLine.erase(0, pos);
+			reqFound = false;
+			// Next find direction delimiter
+			if((pos = readLine.find(delimiter)) != std::string::npos)
 			{
-				return false;
+				readLine.erase(pos, string::npos);
 			}
-			readLine.erase(0, pos + delimiter.length());
-		}
-		if(readLine.find(delimiter) == string::npos)
-		{
-			if(readLine != "")
+				
+			delimiter = ",";
+			bool first = true;
+			// Now it is time to check requirements
+			while((pos = readLine.find(delimiter)) != std::string::npos)
 			{
-				currReq = readLine;
-				// At least one item/character must match requirement
-				if(character.getInvMiscItem(currReq) == nullptr && character.getInvEquipable(currReq) == nullptr && character.getInvConsumable(currReq) == nullptr && character.getInvCharacter(currReq) == nullptr)
+				// Remove direction from string, only interested in requirements
+				if(first) 
 				{
-					return false;
+					readLine.erase(0, pos + delimiter.length());
+					first = false;
+				}
+				else
+				{
+					currReq = readLine.substr(0, pos);
+					// At least one item/character must match requirement
+					if(character.getInvMiscItem(currReq) == nullptr && character.getInvEquipable(currReq) == nullptr && character.getInvConsumable(currReq) == nullptr && character.getInvCharacter(currReq) == nullptr)
+					{
+						return false;
+					}
+					readLine.erase(0, pos + delimiter.length());
 				}
 			}
+
+			if(readLine.find(delimiter) == string::npos)
+			{
+				if(readLine != "")
+				{
+					// At least one item/character must match requirement
+					if(character.getInvMiscItem(readLine) == nullptr && character.getInvEquipable(readLine) == nullptr && character.getInvConsumable(readLine) == nullptr && character.getInvCharacter(readLine) == nullptr)
+					{
+						return false;
+					}
+				}
+			}
+			reqFound = true;
 		}
-		return true;
+		return reqFound;
 	}
 
 	// Adds a neigboring environment to this room. Takes environment reference with direction.
@@ -535,13 +606,6 @@ namespace GameLogic
 		}
 	}
 
-	// Assigns left-hand Environment to right-hand Environment.
-	Environment& Environment::operator=(const Environment& env)
-	{
-		//TODO: Implement this?
-		return *this;
-	}
-
 	// Returns the type of this room.
 	std::string Environment::getType() const
 	{
@@ -549,7 +613,7 @@ namespace GameLogic
 	}
 
 	// Returns the map of all exits.
-	std::map<std::string, Environment*> Environment::getExits() const
+	std::map<std::string, Environment*>& Environment::getExits()
 	{
 		return exits_;
 	}

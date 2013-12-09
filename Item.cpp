@@ -2,7 +2,7 @@
 ///				 It is typically carried by a character or present within an environment.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-24
+///	Version: 2013-12-09
 
 #include "Item.h"
 #include <sstream>
@@ -77,13 +77,6 @@ namespace GameLogic
 	void Item::setWeight(double weight)
 	{
 		weight_ = weight;
-	}
-
-	// Assigns left-hand Item to right-hand Item.
-	Item& Item::operator=(const Item& env)
-	{
-		//TODO
-		return *this;
 	}
 }
 

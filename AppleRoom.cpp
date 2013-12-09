@@ -1,7 +1,7 @@
 /// Description: An AppleRoom is a predictable place full of apples.  
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-29
+///	Version: 2013-12-09
 
 #include "AppleRoom.h"
 #include "Food.h"
@@ -30,10 +30,7 @@ namespace GameLogic
 	// Process event that may occur when leaving environment.
 	void AppleRoom::onLeave(Character& character)
 	{
-		if(character.isControllable())
-		{
-			cout << character.getName() << " left the apple room." << endl;
-		}
+		// TODO: Add onLeave event (if this is what one wants)
 	}
 
 	// Process event that may occur while moving in room.

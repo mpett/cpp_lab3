@@ -1,7 +1,7 @@
 /// Description: Header file for Character class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-07
+///	Version: 2013-12-09
 #pragma once
 #include "Item.h"
 #include "Equipable.h"
@@ -42,14 +42,14 @@ namespace GameLogic
 	{
 	public:
 		// Destructor to character.
-		 ~Character();
+		 virtual ~Character();
 
 		 // Constructor for character. Used for loading a character.
 		 Character(bool controllable, std::string name, std::string type, double weight, int strength, int currentHealth, int maxHealth, int minDamage, int maxDamage, int currentCarried, int maxCarried, Equipable * currentArmor, Equipable * currentWeapon, bool canPerformAction, bool atNewRoom, Environment* room) : 
 			 name_(name), type_(type), weight_(weight), strength_(strength), currentHealth_(currentHealth), maxHealth_(maxHealth), minDamage_(minDamage), maxDamage_(maxDamage), currentCarried_(currentCarried), maxCarried_(maxCarried), currentEquippedArmor_(currentArmor), currentEquippedWeapon_(currentWeapon), canPerformAction_(canPerformAction), controllable_(controllable), atNewRoom_(atNewRoom) 
 		 {
-			 aiBehavior_ = AI_BEHAVIOR::STAND_STILL; // Default
-			 currentRoom_           = nullptr;
+			 aiBehavior_  = AI_BEHAVIOR::STAND_STILL; // Default
+			 currentRoom_ = nullptr;
 			 setCurrentRoom(room, false);
 		 }
 		 
@@ -122,10 +122,7 @@ namespace GameLogic
 		virtual bool isAlive() const;
 
 		// Returns true if character is controllable by user.
-		bool isControllable() const 
-		{
-			return controllable_;
-		}
+		bool isControllable() const;
 
 		// Prints a help message for corresponding character.
 		virtual bool help(std::string);
@@ -183,6 +180,9 @@ namespace GameLogic
 		// Damages the character with a certian amount of points.
 		virtual void takeDamage(int damage);
 
+		// Sets if the character is at a new room.
+		void setAtNewRoom(bool val);
+		
 		// Sets the weight of the character.
 		void setCharacterWeight(double weight);
 
@@ -271,9 +271,6 @@ namespace GameLogic
 		// Tries to remove the first occurence of matching pointer to Character from inventory (if it exist). 
 		// Note: Will not delete the character itself, only remove it from the inventory.
 		void removeInvCharacter(std::string key);
-
-		// Assigns left-hand Character to right-hand Character.
-		virtual Character& operator=(const Character& env);
 		
 		/** NPC RELEVANT FUNCTIONS **/
 		// Tries to move in a random direction.

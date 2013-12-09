@@ -1,7 +1,7 @@
 /// Description: Header file for Consumable class, inherits from Item class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-17
+///	Version: 2013-12-09
 #pragma once
 #include "Item.h"
 #include "Character.h"
@@ -23,7 +23,7 @@ namespace GameLogic
 		virtual void applyEffect(Character& character) = 0;
 
 		// Returns health affected by item.
-		virtual int getHealthAffected() const = 0;
+		virtual int getHealthAffected() const;
 
 		// Returns a detailed string representation of this item.
 		// Used when saving the game information to file.
@@ -40,9 +40,6 @@ namespace GameLogic
 
 		// Returns true if this item is consumed and destroyed when picked up.
 		bool isConsumedOnPickup() const;
-
-		// Assigns left-hand Consumable to right-hand Consumable.
-		virtual Consumable& operator=(const Consumable& env);
 
 	protected:
 		int nrUses_;

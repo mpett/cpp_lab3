@@ -1,0 +1,754 @@
+# READ CONSUMABLES
+8
+
+Health Potion
+7
+Potion
+32
+0.5
+3
+0
+7
+
+Purple potion
+12
+Strength Potion
+500
+0.3
+1
+1
+4
+
+Cheese
+13
+Food
+5
+0.1
+1
+0
+8
+
+Roasted Chicken
+9
+Food
+5
+0.1
+1
+0
+7
+
+Apple
+11
+Food
+5
+0.1
+1
+0
+4
+
+Bread
+8
+Food
+5
+0.1
+1
+0
+2
+
+Porkchop
+10
+Food
+5
+0.1
+1
+0
+3
+
+Health Potion
+14
+Potion
+32
+0.5
+3
+0
+8
+
+# READ MISCITEMS
+10
+
+Arrows
+15
+Projectile
+16
+1.5
+
+Staff
+22
+Wood
+1
+0.15
+
+Book on writing Books
+18
+Book
+9
+0.15
+
+Blargh's Doll
+23
+Doll
+2
+1.25
+
+Teleport Crystal
+21
+Crystal
+3
+0.1
+
+Treasure Room Key
+20
+Key
+4
+0.1
+
+Kitchen Key
+19
+Key
+4
+0.1
+
+Dinner Plates
+16
+Misc
+7
+0.5
+
+Forks
+17
+Misc
+6
+0.25
+
+Cell Key
+24
+Key
+2
+1.05
+
+
+# READ EQUIPABLES
+7
+
+Leather Armor
+2
+Normal Armor
+50
+12.25
+1
+Character must have a strength of 2
+10
+2
+
+Wheatley's Bow
+1
+Normal Bow
+100
+4.25
+0
+Character must have a strength of 7 and an arrow in inventory.
+1
+10
+7
+
+Wheatley's Short Sword
+0
+Normal Sword
+30
+6.15
+1
+Character must have a strength of 4
+2
+4
+4
+
+Pick-axe
+4
+Normal Sword
+55
+10
+0
+Character must have a strength of 5
+1
+7
+5
+
+Axe
+3
+Normal Sword
+75
+12.65
+0
+Character must have a strength of 6
+5
+7
+6
+
+Plate Mail
+6
+Normal Armor
+105
+30
+1
+Character must have a strength of 10
+17
+10
+
+Short Sword
+5
+Normal Sword
+45
+6
+1
+Character must have a strength of 5
+2
+6
+5
+
+
+# READ ROOMS
+11
+
+Dungeon Room
+A dimly lit room. You see an open gate to the north of you.
+
+
+
+
+
+Dungeon Room
+You stand in large room. There are four exits around you. You see some faint shimmering to the north.
+
+
+
+EAST,KITCHEN KEY;NORTH,TREASURE ROOM KEY
+
+Dungeon Room
+A long corridor lit by some torches, struggling to maintain their glow.
+
+
+
+
+
+Dungeon Room
+You stand in a library with a crackling fireplace. Before the fireplace you see the faint contour of a door.
+
+18
+
+TELEPORT,TELEPORT CRYSTAL
+
+Dungeon Room
+A large greenish cavern. The smell of sulphur is everywhere.
+
+
+9
+CRACKEDWALL,PICK-AXE
+
+Dungeon Room
+You are in a small cupboard. You are barely able to sit in here.
+
+19
+11
+
+
+Dungeon Room
+A decorative kitchen. All around you there is food and dinner plates, even though most of them seem unused. There is also an old cupboard in here.
+Axe
+16,17
+8,10
+WEST,KITCHEN KEY
+
+Goal Room
+You stand inside of the treasure room. Loads of treasure are scattered around the room.
+
+
+
+SOUTH,TREASURE ROOM KEY
+
+Apple Room
+You see a large apple tree.
+
+
+
+
+
+Dungeon Room
+You are in a prison. The stench is everywhere!
+
+
+
+CELL,CELL KEY
+
+Dungeon Room
+A small room with four walls. There seems to be something reminiscant of a bench in the corner.
+
+
+
+GUARDROOM,CELL KEY
+
+
+# READ ROOMS EXITS
+11
+
+NORTH,1
+
+EAST,6;NORTH,7;SOUTH,0;WEST,2
+
+EAST,1;GUARDROOM,9;NORTH,3
+
+SOUTH,2;TELEPORT,4
+
+CRACKEDWALL,5;OPENING,8
+
+DOOR,6
+
+CUPBOARD,5;WEST,1
+
+SOUTH,1
+
+CAVE,4
+
+CELL,10;CORRIDOR,2
+
+GUARDROOM,9
+
+
+# READ CHARACTERS
+16
+
+0
+Wheatley the Thief
+Human
+6
+99.9007
+10
+20
+3
+5
+24.65
+75
+Leather Armor
+Wheatley's Short Sword
+
+1
+1
+0
+0
+15
+7
+Leather Armor,Wheatley's Bow,Wheatley's Short Sword
+
+2
+Ben the Scholar
+Scholar
+3
+117.32
+5
+5
+2
+2
+0.45
+10
+
+
+Hello there.;Have you seen my green friend?;...I wonder where he have gone...;Mumble,mumble..;Hmm, maybe he is in there? No, no.. I already checked that room..;I could have sworn that I saw him inside the library room, now where is he?
+1
+0
+1
+1
+22
+12
+
+Blargh the Green Assistant
+Purple potion
+
+3
+Blargh the Green Assistant
+Goblin
+2
+21.0835
+3
+5
+1
+2
+1.35
+10
+
+
+Blargh?;Blargh!;Blargh.;Blargh, blurgh.;Blurgh, blargh.;Blargh...blargh?;?;Blargh?!;...Quite marvelous theory actually, one might believe that...ehm, I mean..BLARGH!
+1
+0
+1
+0
+23
+13
+
+
+3
+Bok
+Golem
+15
+367.235
+20
+20
+5
+7
+0.1
+100
+
+
+...
+1
+0
+1
+7
+21
+
+
+
+
+4
+Dagonia
+Dragon
+25
+1400.94
+30
+30
+10
+15
+10.1
+200
+
+
+You dare to enter my lair?;Foolish mortal!;Toasters toast toast!;Let's burn!;Flame on!
+1
+0
+1
+5
+20
+
+Pick-axe
+0
+10
+1
+
+9
+Kapla
+Human
+10
+86.9502
+20
+20
+5
+8
+37.55
+60
+Plate Mail
+Short Sword
+Villain!;This is a restricted area, leave!;Leave this place!
+1
+0
+1
+6
+24
+14
+Plate Mail,Short Sword
+
+10
+Biargh
+Goblin
+2
+7.83205
+3
+5
+1
+2
+0
+10
+
+
+Biargh?;Biargh!;Biargh.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Bikow
+Goblin
+2
+24.0446
+3
+5
+1
+2
+0
+10
+
+
+Bikow?;Bikow!;Bikow.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Bl-a
+Goblin
+2
+19.3459
+3
+5
+1
+2
+0
+10
+
+
+Bl-a?;Bl-a!;Bl-a.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Blargh-blargh
+Goblin
+2
+9.85774
+3
+5
+1
+2
+0
+10
+
+
+Blargh-blargh?;Blargh-blargh!;Blargh-blargh.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Blargho
+Goblin
+2
+5.32601
+3
+5
+1
+2
+0
+10
+
+
+Blargho?;Blargho!;Blargho.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Blurgh
+Goblin
+2
+23.3239
+3
+5
+1
+2
+0
+10
+
+
+Blurgh?;Blurgh!;Blurgh.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Bok-bok
+Goblin
+2
+17.1394
+3
+5
+1
+2
+0
+10
+
+
+Bok-bok?;Bok-bok!;Bok-bok.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Borgh
+Goblin
+2
+17.7142
+3
+5
+1
+2
+0
+10
+
+
+Borgh?;Borgh!;Borgh.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Borka
+Goblin
+2
+15.268
+3
+5
+1
+2
+0
+10
+
+
+Borka?;Borka!;Borka.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+10
+Sven
+Goblin
+2
+7.74463
+3
+5
+1
+2
+0
+10
+
+
+Sven?;Sven!;Sven.;Blargh, blurgh.;Blargh...blargh?
+1
+0
+1
+1
+
+
+
+
+
+# READ CHARACTERS IN INVENTORY
+16
+
+Wheatley the Thief
+
+
+Ben the Scholar
+
+
+Blargh the Green Assistant
+
+
+Bok
+
+
+Dagonia
+
+
+Kapla
+
+
+Biargh
+
+
+Bikow
+
+
+Bl-a
+
+
+Blargh-blargh
+
+
+Blargho
+
+
+Blurgh
+
+
+Bok-bok
+
+
+Borgh
+
+
+Borka
+
+
+Sven
+
+
+
+# READ WHICH CHARACTER WE SAVED AT
+1
+
+Wheatley the Thief
+
+# READ INTRO TEXT (ONLY SHOWN ON NEW GAME)
+1
+
+...As you journey deeper down into the dungeon you begin to wonder if this stair will ever come to an end. Suddenly, just before you were starting to think about going up, the stairs come to an end. Finally! Now it is time to find the treasure room, once done you will be financially secure for the rest of your life. If you now could only find a way to regain some strength so that you can use your bow thne everything should be easier than stealing money from a nobleman...
+
+# READ OUTRO TEXT (ONLY SHOW UPON WINNING THE GAME)
+1
+
+The glittering of the treasure is so bright that you need to shield your eyes. Such richness! You begin to pack the treasure into your backpack, grinning widely whilst doing so.
+

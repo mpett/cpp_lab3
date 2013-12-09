@@ -185,7 +185,7 @@ Goblin						# Type
 Crude Breastplate				# Current equipped armor
 Old Club						# Current equipped weapon
 Ugh;Blargh;Blurbh		# Things to say
-1							# Can perform action?
+0							# Can perform action?
 0							# Controllable?
 0							# At new room?
 1							# AI-Behavior (if NPC)
@@ -207,3 +207,13 @@ Blurgh						# Name of character with inventory
 1
 
 Joe							# Name of character when saved
+
+# READ INTRO TEXT (ONLY SHOWN ON NEW GAME)
+1
+
+"This is an adventure!"
+
+# READ OUTRO TEXT (ONLY SHOW UPON WINNING THE GAME)
+1
+
+"You are a super player!"

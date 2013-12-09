@@ -1,7 +1,7 @@
 /// Description: Header file for Item class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-11-17
+///	Version: 2013-12-09
 #pragma once
 #include <string>
 
@@ -49,9 +49,6 @@ namespace GameLogic
 
 		// Sets the weight for this item.
 		void setWeight(double weight);
-
-		// Assigns left-hand Item to right-hand Item.
-		virtual Item& operator=(const Item& env);
 
 	protected:
 		std::string name_;

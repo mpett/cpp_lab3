@@ -2,7 +2,7 @@
 ///              It can be controllable (user can issue commands to it) or un-controllable (command is randomly generated).
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-07
+///	Version: 2013-12-09
 #include <algorithm>
 #include <sstream>
 #include "Character.h"
@@ -323,7 +323,7 @@ namespace GameLogic
 		{
 			if(controllable_)
 			{
-				cout << currentRoom_->getDescription(this);
+				GameEngine::FormattedOutput(currentRoom_->getDescription(this));
 			}
 
 			return false;
@@ -353,6 +353,7 @@ namespace GameLogic
 			{
 				if(!first) ss << ";";
 				ss << (*it);
+				first = false;
 			}
 			ss << "\n";
 			
@@ -456,6 +457,12 @@ namespace GameLogic
 		{
 			return (currentHealth_ > 0);
 		}
+		
+		// Returns true if character is controllable by user.
+		bool Character::isControllable() const 
+		{
+			return controllable_;
+		}
 
 		// Adds an sentence to things that the character can say when talked to.
 		void Character::addThingToSay(string sentence)
@@ -503,7 +510,7 @@ namespace GameLogic
 			Environment * nextRoom = currentRoom_->neighbor(direction);
 			if(nextRoom != nullptr)
 			{
-				if(nextRoom->checkRoomRequirement(*this))
+				if(currentRoom_->checkDirectionRequirement(direction, *this))
 				{
 					setCurrentRoom(nextRoom, true); // TODO: Is ok?
 					if(controllable_) cout << "You went " << originalDirection << endl;
@@ -519,7 +526,7 @@ namespace GameLogic
 						string delimiter = ";";
 						size_t pos = 0;
 						string currReq;
-						string readLine = nextRoom->roomRequirement();
+						string readLine = currentRoom_->directionRequirement(direction);
 						while ((pos = readLine.find(delimiter)) != std::string::npos) 
 						{
 							currReq = readLine.substr(0, pos);
@@ -595,12 +602,18 @@ namespace GameLogic
 					// Only attack if there are more than 1 in room (i.e. not alone)
 					if(currentRoom_->getCharacters().size() > 1)
 					{
-						tryRandomAttackAll();
+						if(!tryRandomAttackAll() && currentRoom_->containsPlayer())
+						{
+							cout << name_ << " stands still, waiting." << endl;
+						}
 					}
 					// Time to get a movin'
 					else if(dice > 40)
 					{
-						tryRandomMove();
+						if(!tryRandomMove() && currentRoom_->containsPlayer())
+						{
+							cout << name_ << " stands still, waiting." << endl;
+						}
 					}
 					break;
 				}
@@ -610,19 +623,28 @@ namespace GameLogic
 					// Only attack if there are more than 1 in room (i.e. not alone)
 					if(currentRoom_->containsPlayer())
 					{
-						tryRandomAttack();
+						if(!tryRandomAttack())
+						{
+							cout << name_ << " stands still, waiting." << endl;
+						}
 					}
 					// Time to get a movin'
 					else if(dice > 40)
 					{
-						tryRandomMove();
+						if(!tryRandomMove())
+						{
+							cout << name_ << " stands still, waiting." << endl;
+						}
 					}
 					break;
 				}
 				// NPC will remain in room but will attack anything it encounters (even other NPCs)
 				case(AI_BEHAVIOR::AGGRESSIVE_GUARD):
 				{
-					tryRandomAttackAll();
+					if(!tryRandomAttackAll() && currentRoom_->containsPlayer())
+					{
+						cout << name_ << " stands still, waiting." << endl;
+					}
 					break;
 				}
 				// NPC will remain in room, will attack any player character it encounters
@@ -630,7 +652,10 @@ namespace GameLogic
 				{
 					if(currentRoom_->containsPlayer())
 					{
-						tryRandomAttack();
+						if(!tryRandomAttack())
+						{
+							cout << name_ << " stands still, waiting." << endl;
+						}
 					}
 					break;
 				}
@@ -681,7 +706,10 @@ namespace GameLogic
 					// Try attack a random character
 					else if(64)
 					{
-						tryRandomAttackAll();
+						if(!tryRandomAttackAll())
+						{
+							cout << name_ << " stands still, waiting." << endl;
+						}
 					}
 					// Speak
 					else if(80)
@@ -701,18 +729,19 @@ namespace GameLogic
 			{
 				if(controllable_)
 				{
-					cout << "There is no one around with that name. You stand still in confusion." << endl;
-					return false;
+					GameEngine::FormattedOutput("There is no one around with that name. You stand still in confusion.\n");
 				}
+				return false;
 			}
+			
 			int damage = rand()%(maxDamage_ - minDamage_+1) + minDamage_;
-			std::cerr << "damage was " << damage << endl;
 			if(controllable_)
 			{
 				if(attackedChar == this) 
 				{
 					cout << getName() << " is obviously very confused and hit oneself for " << damage << " damage!" << endl;
-				} else
+				} 
+				else
 				{
 					cout << "You managed to hit " << attackedChar->getName() << " for " << damage << " damage!" << endl;
 				}
@@ -736,7 +765,7 @@ namespace GameLogic
 				{
 					cout << "You dropped " << foundItem->getName() << "." << endl;
 				}
-				return true;
+				return false;
 			}
 
 			Equipable *foundEquipable = getInvEquipable(itemString);
@@ -761,7 +790,7 @@ namespace GameLogic
 					}
 					return false;
 				}
-				return true;
+				return false;
 			}
 
 			Consumable *foundConsumable = getInvConsumable(itemString);
@@ -775,7 +804,7 @@ namespace GameLogic
 				{
 					cout << "You dropped " << foundConsumable->getName() << "." << endl;
 				}
-				return true;
+				return false;
 			}
 
 			Character *foundCharacter = getInvCharacter(itemString);
@@ -789,7 +818,7 @@ namespace GameLogic
 				{
 					cout << "You dropped " << foundCharacter->getName() << "." << endl;
 				}
-				return true;
+				return false;
 			}
 
 			if(controllable_)
@@ -825,7 +854,7 @@ namespace GameLogic
 					{
 						cout << "You picked up " << foundItem->getName() << "." << endl;
 					}
-					return true;
+					return false;
 				}
 			}
 
@@ -849,7 +878,7 @@ namespace GameLogic
 					{
 						cout << "You picked up " << foundEquipable->getName() << "." << endl;
 					}
-					return true;
+					return false;
 				}
 			}
 
@@ -876,14 +905,14 @@ namespace GameLogic
 							cout << foundConsumable->getName() << " disappeared." << endl;
 						}
 						delete foundConsumable;
-						return true;
+						return false;
 					}
 					addInvConsumable(foundConsumable);
 					if(controllable_)
 					{
 						cout << "You picked up " << foundConsumable->getName() << "." << endl;
 					}
-					return true;
+					return false;
 				}
 			}
 
@@ -908,7 +937,7 @@ namespace GameLogic
 					{
 						cout << "You added " << foundCharacter->getName() << " to your inventory." << endl;
 					}
-					return true;
+					return false;
 				}
 			}
 
@@ -1035,6 +1064,12 @@ namespace GameLogic
 			}
 		}
 
+		// Sets if the character is at a new room.
+		void Character::setAtNewRoom(bool val)
+		{
+			atNewRoom_ = val;
+		}
+		
 		// Sets the weight of the character.
 		void Character::setCharacterWeight(double weight)
 		{
@@ -1424,13 +1459,6 @@ namespace GameLogic
 		{
 			// TODO:
 			return false;
-		}
-
-		// Assigns left-hand Character to right-hand Character.
-		Character& Character::operator=(const Character& env)
-		{
-			// TODO:
-			return *this;
 		}
 }
 

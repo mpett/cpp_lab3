@@ -1,7 +1,7 @@
 /// Description: Header file for Equipable class, inherits from Item class.
 ///
 /// Authors: Martin Pettersson, Christoffer Wiss
-///	Version: 2013-12-07
+///	Version: 2013-12-09
 #pragma once
 #include "Item.h"
 #include "Character.h"
@@ -40,9 +40,6 @@ namespace GameLogic
 
 		// Removes the effect the item has on the character.
 		virtual void onUnequip(Character& character) = 0;	
-
-		// Assigns left-hand Equipable to right-hand Equipable.
-		virtual Equipable& operator=(const Equipable& env);
 
 	protected:
 		bool equipped_;
