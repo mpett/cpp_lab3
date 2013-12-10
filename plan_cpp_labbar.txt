@@ -39,7 +39,7 @@ Tillägg till basversion:
 3.3 - Ladda kartor/objekt från fil 5p   X
 
 Efter spelet är klart
-3.7 - Rita lite UML diagram, skriv ner några scenarion 4p /
+3.7 - Rita lite UML diagram: 1 klassdiagram, skriv ner 5 scenarion + sekvensdiagram, 1 tillståndsgraf 4p /
 
 Bonus 
 3.6 - Nätverk/trådat spel 9p
@@ -59,29 +59,92 @@ Frågor:
 -----------------------
 * Hur sker minnesallokeringen? Var görs allokering och destruktion?
 
+Svar: Minnesallokeringen sker främst vid start av spelet. Kan dock även ske vid vissa tillfällen såsom då ett träd genererar ett nytt äpple (turnevent).
+      Destruktion sker främst vid avslut av ett spel (ex. när nytt spel startas/laddas). Det kan även ske då "döda" karaktärer upptäcks (vid updateRooms)
+	  eller då Consumable items får slut på charges/isConsumedOnPickup.
+
+	  
 * Läcker programmet minne? Kör en gång med valgrind.
+
+Svar: Nej (såvitt jag vet).
+
 
 * Är alla read-only metoder const-deklarerade?
 
+Svar: Ja, alla metoder som är read-only är const-deklarade.
+
+
 * Beskriv klasshierarkin? Visa klassdiagram.
+
+Svar: Item->Consumable, Item->Equipable, Item, Character->Human, Character->Goblin, Character->Golem, Character->Dragon
+      Environment->AppleRoom, Environment->DungeonRoom, Environment->GoalRoom
+
 
 * Hur ser slingan ut som hanterar händelser. Hur hanteras händelser?
 
+Svar: Händelser hanteras främst via updateRoooms (dvs. en action görs eller ett rum utför en turn event). 
+      Varje karaktär ges ett drag. Vissa actions slukar inte drag (ex. look/drop/take). 
+
+ 
 * Vad är det som håller reda på var spelaren är? 
+
+Svar: För att spara/pausa så finns det en pekare som pekar på vilket rum och spelare (player) som man befann sig på.
+      Annars så håller man koll på att det är spelarens tur via controllable variable (players are controllable).
+
+	  
 
 * Vad håller reda på alla andra objekt i spelet? Hur ser det ut i minnet, visa en minnesbild.
 
+Svar: Rum-vektor håller koll på objekt och karaktärer i rum. Karaktärer håller koll på vilket rum de befinner sig i samt
+      de objekt och karaktärer som de själva bär på.
+
+
 * Hur kopplas miljöerna ihop? Visa minnesbild.
+
+Svar: Via string,Environment pointers. Exempelvis "Up",0x0350ba (där 0x0350ba är address till det andra rummet).
+
 
 * Hur hittar man saker/grannar? Hur sker uppslagningen?
 
+Svar: Saker sker via uppslagning av namn. Vid flera föremål med samma namn (t.e.x äpple) så tas det första (multimap).
+      Dock vid sparning så används ID för att särskilja dessa föremål (kan ha olika attribut även fast de har samma namn).
+	  
+	  Grannar hittas via en enkel uppslagning i en map (på direction).
+
+ 
 * På vilket sätt skiljer sig karaktärer i spelet?
 
+Svar: Olika beteenden i action är den primära skillnaden. 
+
+	  En Golem är lugn som en filbunke ända tills dess att man attackerar den -
+      då kommer den att jaga en tills dess att den eller man själv är död eller att den tappar bort en (dvs. lyckas ta sig 2 rum ifrån den på ett drag).
+	  
+	  Drakar kan under strid spruta eld på måfå (hur mycket eld som skickas kontrolleras av en eldmätare som tickar upp för varje tur).
+	  
+	  Scholar letar ofta efter ett visst objekt/karaktär. När man återhämtar dessa objekt/karaktärer så blir de glada och ger en oftast något speciellt föremål.
+	  Efter det så går de mest runt och mumlar.
+
+	  Human/Goblin är i stort sett likadana förutom deras vikter sätts annorlunda (detta gäller även för ovanstående). En Goblin väger exempelvis betydligt 
+	  mindre än en Human.
+
+	  
 * Hur sker inmatning? Hur sker parsningen av det som inmatas?
 
+Svar: Inmatning sker då spelaren har kontrollen (controllable character). Det som matas in delas upp i två delar: ett "verb" och resterande.
+      Verbet används för att slå upp en medlemsfunktionspekare. Ifall detta lyckas så körs denna på karaktären med resterande text sträng som input.
+	  Hur den resterande text strängen därefter hanteras beror på metoden. Exempelvis använder pickup den resterande text strängen för att avgöra vilket
+	  objekt som ska plockas upp (slår upp i map) och om detta finns så ser den till att ta bort föremålet från rummet och lägga till det i karaktärens 
+	  lagringsutrymme.
+
+  
 * Hur fungerar action-metoden?
 
-
+Svar: action är till för NPC, dvs. icke-spelarbara karaktärer. I action så (beroende på implementation, se exempel ovan med Drake & Golem) slumpas ett agerande
+      fram (exempelvis attack) som beror på vilket sinnestillstånd som NPC befinner sig i (AI_BEHAVIOR). Ifall NPC t.ex. är i STAND_STILL tillståndet så kommer
+	  den endast att stå still emedan om den är i AGGRESSIVE_AMOVE så kommer den att slumpmässigt alternera mellan att förflytta sig mellan rum och att attackera
+	  en tillgänglig karaktär.
+-----------------------
+	  
 Källor:
 -----------------------
 http://www.codeguru.com/cpp/cpp/article.php/c17401/C-Tutorial-PointertoMember-Function.htm - Bra artikel på medlemsfunktionspekare.
