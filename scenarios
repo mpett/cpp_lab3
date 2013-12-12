@@ -1,4 +1,4 @@
-SCENARIO 1:
+SCENARION:
 
 Spelare går in i korridor. I korridoren står Ben. Spelare inleder en konversation med Ben. Ben svarar att han saknar sin gröne kompis. Spelare går norrut och därefter uppför en trappa. 
 
@@ -13,3 +13,4 @@ Spelare låser upp dörren och går in i ett kök. Spelare ser sig om i köket o
 Spelare försöker plocka upp Blargh och lägga honom i sin kappsäck, men blir meddelad: "Du orkar inte bära mer just nu". Spelare inspekterar sin kappsäck (genom att skriva "inv" i kommandofönstret). Spelare ser att hon för närvarande bär 11 kg av 13 möjliga, men även att "plåtrustning" väger hela 7 kg! Spelare tar "plåtrustning" ur kappsäcken och lägger denna på golvet i köksrummet. Spelare plockar upp Blargh och lägger honom i sin kappsäck.
 
 Spelare tar samma väg tillbaka till Ben. Samtidigt som Spelare går in i korridoren utbrister Ben hur glad han är och släpper ett gyllene föremål på marken (som förmodligen kan vara till nytta någon gång i framtiden).
+

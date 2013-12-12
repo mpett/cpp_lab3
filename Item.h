@@ -13,6 +13,7 @@ namespace GameLogic
 	class Item 
 	{
 	public:
+		virtual ~Item();
 		// Constructor of Item class.
 		Item(std::string name, std::string type, int price, double weight, int id) : name_(name), type_(type), price_(price), weight_(weight), myId_(id){}
 

@@ -10,6 +10,11 @@ using std::string;
 
 namespace GameLogic
 {
+	Item::~Item()
+	{
+		
+	}
+
 	// Returns the unique id of this item.
 	int Item::getId() const
 	{

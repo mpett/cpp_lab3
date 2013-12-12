@@ -76,8 +76,16 @@ Svar: Ja, alla metoder som är read-only är const-deklarade.
 
 * Beskriv klasshierarkin? Visa klassdiagram.
 
-Svar: Item->Consumable, Item->Equipable, Item, Character->Human, Character->Goblin, Character->Golem, Character->Dragon
-      Environment->AppleRoom, Environment->DungeonRoom, Environment->GoalRoom
+Svar: Item->Consumable, 
+	  Item->Equipable, 
+	  Item, 
+	  Character->Human, 
+	  Character->Goblin, 
+	  Character->Golem, 
+	  Character->Dragon
+      Environment->AppleRoom, 
+	  Environment->DungeonRoom, 
+	  Environment->GoalRoom
 
 
 * Hur ser slingan ut som hanterar händelser. Hur hanteras händelser?
@@ -95,8 +103,8 @@ Svar: För att spara/pausa så finns det en pekare som pekar på vilket rum och spe
 
 * Vad håller reda på alla andra objekt i spelet? Hur ser det ut i minnet, visa en minnesbild.
 
-Svar: Rum-vektor håller koll på objekt och karaktärer i rum. Karaktärer håller koll på vilket rum de befinner sig i samt
-      de objekt och karaktärer som de själva bär på.
+Svar: Rum-vektor håller koll på objekt och karaktärer i rum. 
+      Karaktärer håller koll på vilket rum de befinner sig i samt de objekt och karaktärer som de själva bär på.
 
 
 * Hur kopplas miljöerna ihop? Visa minnesbild.
